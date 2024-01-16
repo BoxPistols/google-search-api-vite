@@ -28,12 +28,29 @@ const App: React.FC = () => {
 
   return (
     <>
-      <Typography variant='h3' color='initial' component='h1' m={'4vw'}>
-        Google Custom Search API
+      <Typography
+        variant='h3'
+        component='h1'
+        mt={'4vw'}
+        fontSize={'3vw'}
+        fontWeight={'bold'}
+        textAlign={'center'}
+        color={'#3f51b5'}
+      >
+        Google Search Best 10
       </Typography>
+      <Typography
+        textAlign={'center'}
+        variant='subtitle2'
+        mt={1}
+        color={'#abc'}
+      >
+        一日に使える検索回数には制限(50回/24時間)がありますので、ご注意ください。
+      </Typography>
+
       <Container
         sx={{
-          p: 4,
+          p: 2,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',

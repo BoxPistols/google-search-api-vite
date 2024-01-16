@@ -1,6 +1,6 @@
 // src/components/SearchForm.tsx
 import React, { useState } from 'react'
-import { TextField, Button } from '@mui/material'
+import { TextField, Button, Box } from '@mui/material'
 
 type SearchFormProps = {
   onSearch: (apiKey: string, cx: string, query: string) => void
@@ -22,21 +22,23 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        display: 'grid',
-        gap: '10px',
-        gridTemplateColumns: '1fr 120px',
-        // backgroundColor: '#f9f9f9',
-        padding: 12,
-        marginBottom: 8,
-        // boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)',
-        borderRadius: 4,
-        border: '1px solid #ececec'
-      }}
-    >
-      {/* <TextField
+    <form onSubmit={handleSubmit}>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: '10px',
+          gridTemplateColumns: '1fr 120px',
+          padding: 2,
+          marginBottom: 2,
+          // boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)',
+          borderRadius: 1,
+          // border: '1px solid #ececec',
+          '@media (max-width: 600px)': {
+            gridTemplateColumns: '1fr'
+          }
+        }}
+      >
+        {/* <TextField
         label='API Key'
         variant='outlined'
         value={apiKey}
@@ -52,21 +54,28 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
         // onChange={(e) => setCx(e.target.value)}
         style={{ marginRight: 8 }}
       /> */}
-      <TextField
-        label='Search Query'
-        variant='outlined'
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        style={{ marginRight: 8 }}
-        sx={{
-          minWidth: 320,
-          maxWidth: 800,
-          width: '100%'
-        }}
-      />
-      <Button variant='contained' color='primary' type='submit' size='large'>
-        Search
-      </Button>
+        <TextField
+          label='Search Query'
+          variant='outlined'
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          sx={{
+            mr: 4,
+            minWidth: '50vw',
+            maxWidth: '80vw',
+            width: '100%',
+            '@media (max-width: 600px)': {
+              minWidth: '84vw',
+              maxWidth: 'auto',
+              width: '100%',
+              m: 0
+            }
+          }}
+        />
+        <Button variant='contained' color='primary' type='submit' size='large'>
+          Search
+        </Button>
+      </Box>
     </form>
   )
 }

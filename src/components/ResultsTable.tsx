@@ -34,7 +34,13 @@ const StyledCell = (props: any) => (
 
 const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
   return (
-    <TableContainer component={Paper} elevation={0}>
+    <TableContainer
+      component={Paper}
+      elevation={0}
+      sx={{
+        border: '1px solid #ececec'
+      }}
+    >
       <Table>
         <TableHead>
           <TableRow>
