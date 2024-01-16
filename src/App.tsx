@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import SearchForm from './components/SearchForm'
 import ResultsTable from './components/ResultsTable'
 import { Container, Typography } from '@mui/material'
+import { Analytics } from '@vercel/analytics/react'
 
 const App: React.FC = () => {
   const [results, setResults] = useState([])
@@ -64,6 +65,7 @@ const App: React.FC = () => {
         <SearchForm onSearch={handleSearch} />
         <ResultsTable results={results} />
       </Container>
+      <Analytics />
     </>
   )
 }
