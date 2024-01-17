@@ -30,30 +30,14 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
           gridTemplateColumns: '1fr 120px',
           padding: 2,
           marginBottom: 2,
-          // boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)',
           borderRadius: 1,
-          // border: '1px solid #ececec',
           '@media (max-width: 600px)': {
-            gridTemplateColumns: '1fr'
+            gridTemplateColumns: '1fr',
+            justifyContent: 'center',
+            alignItems: 'center',
           }
         }}
       >
-        {/* <TextField
-        label='API Key'
-        variant='outlined'
-        value={apiKey}
-        placeholder='Google API Key'
-        // onChange={(e) => setApiKey(e.target.value)}
-        style={{ marginRight: 8 }}
-      />
-      <TextField
-        label='Search Engine ID'
-        variant='outlined'
-        placeholder='Google Search Engine ID'
-        value={cx}
-        // onChange={(e) => setCx(e.target.value)}
-        style={{ marginRight: 8 }}
-      /> */}
         <TextField
           label='Search Query'
           variant='outlined'
@@ -61,14 +45,14 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
           onChange={(e) => setQuery(e.target.value)}
           sx={{
             mr: 4,
-            minWidth: '50vw',
+            minWidth: '24em',
             maxWidth: '80vw',
             width: '100%',
             '@media (max-width: 600px)': {
               minWidth: '84vw',
               maxWidth: 'auto',
               width: '100%',
-              m: 0
+              mr: 0,
             }
           }}
         />
