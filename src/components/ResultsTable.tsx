@@ -37,10 +37,13 @@ const StyledCell = (props: any) => (
 const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
   // 検索結果をCSV形式に変換する関数
   const convertToCSV = (data: SearchResult[]) => {
-    const csvRows = data.map((result) =>
-      [result.title, result.link, result.snippet].join(',')
+    const csvRows = data.map(
+      (result, index) =>
+        // 連番を追加しています。ここで1を加えるのは、indexが0から始まるためです。
+        `${index + 1},${result.title},${result.link},${result.snippet}`
     )
-    return ['Title,Link,Snippet', ...csvRows].join('\n')
+    // CSVのヘッダーに「検索順位」カラムを追加します。
+    return ['順位,Title,Link,Snippet', ...csvRows].join('\n')
   }
 
   // CSVダウンロードのハンドラ
@@ -48,9 +51,15 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
     const csvString = convertToCSV(results)
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
+
+    // 現在の日時を取得し、フォーマットする
+    const date = new Date()
+    const formattedDate = date.toISOString().slice(0, 19).replace(/-|:|T/g, '')
+    const fileName = `search-results_${formattedDate}.csv`
+
     const link = document.createElement('a')
     link.href = url
-    link.download = 'search-results.csv'
+    link.download = fileName
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
