@@ -1,37 +1,61 @@
-// import './App.css'
-
 // src/App.tsx
-import React, { useState } from 'react'
+import { useState } from 'react'
 import SearchForm from './components/SearchForm'
 import ResultsTable from './components/ResultsTable'
 import { Container, Typography } from '@mui/material'
 import { Analytics } from '@vercel/analytics/react'
 
-const App: React.FC = () => {
-  const [results, setResults] = useState([])
+const App = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [results, setResults] = useState<any[]>([]) // 検索結果を格納する状態
+  // 検索中にローディングスピナーを表示するための状態 (後述)
+  const [loading, setLoading] = useState(false)
 
   const handleSearch = async (apiKey: string, cx: string, query: string) => {
+    setLoading(true)
+    setResults([]) // 検索結果をリセット
+
+    // 最初の10件の結果を取得
+    const firstPageResponse = await fetchResults(apiKey, cx, query, 1)
+    const firstPageResults = firstPageResponse.items || []
+
+    // 次の10件の結果を取得
+    const secondPageResponse = await fetchResults(apiKey, cx, query, 11)
+    const secondPageResults = secondPageResponse.items || []
+
+    // 結果を結合して状態を更新
+    setResults([...firstPageResults, ...secondPageResults])
+    setLoading(false)
+  }
+
+  // Google Custom Search APIへのリクエストを行う関数
+  const fetchResults = async (
+    apiKey: string,
+    cx: string,
+    query: string,
+    start: number
+  ) => {
     try {
       const response = await fetch(
         `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
           query
-        )}`
+        )}&start=${start}`
       )
       if (!response.ok) {
         throw new Error('Search API request failed')
       }
-      const data = await response.json()
-      setResults(data.items)
+      return await response.json()
     } catch (error) {
       console.error('Error fetching search results:', error)
+      return {}
     }
   }
 
   return (
     <>
       <Typography
-        variant='h3'
-        component='h1'
+        variant="h3"
+        component="h1"
         mt={'4vw'}
         fontSize={'3vw'}
         fontWeight={'bold'}
@@ -42,11 +66,12 @@ const App: React.FC = () => {
       </Typography>
       <Typography
         textAlign={'center'}
-        variant='subtitle2'
+        variant="subtitle2"
         mt={1}
         color={'#abc'}
       >
-        一日に使える検索回数には制限(1000クエリ=10キーワードなら10回まで | 24時間 | 17時リセット)がありますので、ご注意ください。
+        一日に使える検索回数には制限(1000クエリ=10キーワードなら10回まで |
+        24時間 | 17時リセット)がありますので、ご注意ください。
       </Typography>
 
       <Container
@@ -59,11 +84,11 @@ const App: React.FC = () => {
           boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)',
           border: '1px solid #ececec',
           borderRadius: 4,
-          margin: '2vw auto'
+          margin: '2vw auto',
         }}
       >
         <SearchForm onSearch={handleSearch} />
-        <ResultsTable results={results} />
+        {loading ? <p>Loading...</p> : <ResultsTable results={results} />}
       </Container>
       <Analytics />
     </>
