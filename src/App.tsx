@@ -4,6 +4,7 @@ import SearchForm from './components/SearchForm'
 import ResultsTable from './components/ResultsTable'
 import { Container, Typography } from '@mui/material'
 import { Analytics } from '@vercel/analytics/react'
+import theme from './util/theme'
 
 const App = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,7 +38,7 @@ const App = () => {
   }
   // 残りのクエリ数を計算
   // const remainingQueries = 1000 - queriesUsed
-  const remainingQueries = queriesUsed * 20
+  const remainingQueries = queriesUsed
 
   // Google Custom Search APIへのリクエストを行う関数
   const fetchResults = async (
@@ -65,13 +66,11 @@ const App = () => {
   return (
     <>
       <Typography
-        variant="h3"
         component="h1"
-        mt={'4vw'}
-        fontSize={'3vw'}
-        fontWeight={'bold'}
+        variant="h1"
+        mt={'2vw'}
         textAlign={'center'}
-        color={'#3f51b5'}
+        color={theme.palette.primary.main}
       >
         Google Search Best 10
       </Typography>
@@ -79,10 +78,9 @@ const App = () => {
         textAlign={'center'}
         variant="subtitle2"
         mt={1}
-        color={'#abc'}
+        color={theme.palette.secondary.main}
       >
-        一日に使える検索回数には制限(1000クエリ | 24時間 |
-        17時リセット)がありますのでご注意ください
+        一日に使える検索回数には制限(100クエリ/24時間/17時リセット)がありますのでご注意ください
       </Typography>
 
       <Container
@@ -100,12 +98,23 @@ const App = () => {
       >
         <p
           style={{
-            color: remainingQueries < 0 ? 'red' : 'black',
-            margin: '0 0 1vw 0',
+            color:
+              remainingQueries <= 0
+                ? theme.palette.error.main
+                : theme.palette.secondary.main,
+            margin: '0',
           }}
         >
           利用クエリ数 = 目安：
-          {remainingQueries > 0 ? remainingQueries : null} <br />
+          <span
+            style={{
+              color: theme.palette.primary.main,
+              fontSize: '1.25rem',
+            }}
+          >
+            {remainingQueries > 0 ? remainingQueries : null}
+          </span>
+          <br />
           <small>※Google Search APIの仕様 / 正確な数値ではありません</small>
         </p>
         <SearchForm onSearch={handleSearch} />

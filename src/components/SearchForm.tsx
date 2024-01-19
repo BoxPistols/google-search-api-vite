@@ -18,9 +18,16 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}
+      style={{
+        whiteSpace: 'nowrap',
+        width: '90%',
+        margin: '0 auto',
+      }}
+      >
       <Box
         sx={{
+          flexGlow: 1,
           display: 'grid',
           gap: '10px',
           gridTemplateColumns: '1fr 120px',
@@ -43,12 +50,10 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
           onChange={(e) => setQuery(e.target.value)}
           sx={{
             mr: 4,
-            // minWidth: '100%',
-            // maxWidth: '100%',
-            minWidth: '32em',
+            minWidth: '40em',
             maxWidth: '80vw',
             width: '100%',
-            '@media (max-width: 768px)': {
+            '@media (max-width: 960px)': {
               minWidth: 'auto',
               maxWidth: 'auto',
               width: '100%',
