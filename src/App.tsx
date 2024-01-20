@@ -98,10 +98,6 @@ const App = () => {
       >
         <p
           style={{
-            color:
-              remainingQueries <= 0
-                ? theme.palette.error.main
-                : theme.palette.secondary.main,
             margin: '0',
           }}
         >
@@ -115,7 +111,14 @@ const App = () => {
             {remainingQueries > 0 ? remainingQueries : null}
           </span>
           <br />
-          <small>※Google Search APIの仕様 / 正確な数値ではありません</small>
+          <small
+            style={{
+              color: theme.palette.secondary.main,
+              fontSize: '0.75rem',
+            }}
+          >
+            ※Google Search API基準 / 正確な数値ではありません
+          </small>
         </p>
         <SearchForm onSearch={handleSearch} />
         {loading ? <p>Loading...</p> : <ResultsTable results={results} />}

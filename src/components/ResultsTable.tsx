@@ -29,12 +29,13 @@ const StyledCell = (props: any) => (
       textWrap: 'wrap',
       wordBreak: 'break-all',
       minWidth: 300,
+      p: 1,
     }}
     {...props}
   />
 )
 
-const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
+const ResultsTable = ({ results }: ResultsTableProps) => {
   // 検索結果をCSV形式に変換する関数
   const convertToCSV = (data: SearchResult[]) => {
     const csvRows = data.map(
@@ -80,6 +81,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
               sx={{
                 minWidth: 40,
                 maxWidth: 80,
+                width: 70,
               }}
             >
               検索
