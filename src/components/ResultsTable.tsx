@@ -1,5 +1,4 @@
 // src/components/ResultsTable.tsx
-import React from 'react'
 import {
   Table,
   TableBody,
@@ -10,30 +9,33 @@ import {
   TableContainer,
   Button,
   Box,
-} from '@mui/material'
+} from "@mui/material";
+import theme from "../util/theme";
 
 type SearchResult = {
-  title: string
-  link: string
-  snippet: string
-}
+  title: string;
+  link: string;
+  snippet: string;
+};
 
 type ResultsTableProps = {
-  results: SearchResult[]
-}
+  results: SearchResult[];
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const StyledCell = (props: any) => (
   <TableCell
     sx={{
-      textWrap: 'wrap',
-      wordBreak: 'break-all',
+      textWrap: "wrap",
+      wordBreak: "break-all",
       minWidth: 300,
+      maxWidth: 800,
+      fontSize: "0.875rem",
       p: 1,
     }}
     {...props}
   />
-)
+);
 
 const ResultsTable = ({ results }: ResultsTableProps) => {
   // 検索結果をCSV形式に変換する関数
@@ -42,36 +44,37 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
       (result, index) =>
         // 連番を追加しています。ここで1を加えるのは、indexが0から始まるためです。
         `${index + 1},${result.title},${result.link},${result.snippet}`
-    )
+    );
     // CSVのヘッダーに「検索順位」カラムを追加します。
-    return ['順位,Title,Link,Snippet', ...csvRows].join('\n')
-  }
+    return ["順位,Title,Link,Snippet", ...csvRows].join("\n");
+  };
 
   // CSVダウンロードのハンドラ
   const handleDownloadCSV = () => {
-    const csvString = convertToCSV(results)
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
+    const csvString = convertToCSV(results);
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
 
     // 現在の日時を取得し、フォーマットする
-    const date = new Date()
-    const formattedDate = date.toISOString().slice(0, 19).replace(/-|:|T/g, '')
-    const fileName = `search-results_${formattedDate}.csv`
+    const date = new Date();
+    const formattedDate = date.toISOString().slice(0, 19).replace(/-|:|T/g, "");
+    const fileName = `search-results_${formattedDate}.csv`;
 
-    const link = document.createElement('a')
-    link.href = url
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <TableContainer
       component={Paper}
       elevation={0}
       sx={{
-        border: '1px solid #ececec',
+        border: "1px solid ",
+        borderColor: theme.palette.grey[300],
       }}
     >
       <Table>
@@ -82,6 +85,9 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
                 minWidth: 40,
                 maxWidth: 80,
                 width: 70,
+                fontSize: "0.875rem",
+                lineHeight: "1.2rem",
+                textWrap: "nowrap",
               }}
             >
               検索
@@ -108,19 +114,31 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
           ))}
         </TableBody>
       </Table>
-      {/* CSVダウンロードボタンで */}
-      <Box sx={{ textAlign: 'right', p: 2 }}>
-        <Button
-          onClick={handleDownloadCSV}
-          variant="contained"
-          color="success"
-          size="large"
-        >
-          Download CSV
-        </Button>
-      </Box>
+      {
+        // このコンポーネントは、検索結果がある場合にのみ表示される
+        results.length === 0 ? null : (
+          <Box
+            sx={{
+              textAlign: "right",
+              p: 2,
+              position: "fixed",
+              bottom: 2,
+              right: 2,
+            }}
+          >
+            <Button
+              onClick={handleDownloadCSV}
+              variant="contained"
+              color="success"
+              size="large"
+            >
+              Download CSV
+            </Button>
+          </Box>
+        )
+      }
     </TableContainer>
-  )
-}
+  );
+};
 
-export default ResultsTable
+export default ResultsTable;

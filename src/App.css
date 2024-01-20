@@ -1,10 +1,25 @@
 /* @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap'); */
 
 #root {
-  max-width: 1400px;
-  margin: 0 auto;
+  /* max-width: 1400px; */
   padding: 1vh 2vw;
-  text-align: center;
+  margin: 0 auto;
+  /* text-align: center; */
+  line-height: 1.25;
+  font-family: "Nunito Sans", sans-serif;
+  /* グラデーション背景 */
+  background: linear-gradient(135deg, #bbc7e9cd, #dcc2c2cd);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+  min-height: 100vh;
+}
+
+.MuiPaper-root {
+  background: linear-gradient(135deg, #cad1e672, #d8baba6a);
+  padding: 1vh 2vw;
+  margin: 1vh 0;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Prefer Dark Scheme */
