@@ -1,4 +1,3 @@
-// src/components/ResultsTable.tsx
 import {
   Table,
   TableBody,
@@ -22,7 +21,6 @@ type ResultsTableProps = {
   results: SearchResult[];
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const StyledCell = (props: any) => (
   <TableCell
     sx={{
@@ -42,20 +40,21 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
   const convertToCSV = (data: SearchResult[]) => {
     const csvRows = data.map(
       (result, index) =>
-        // 連番を追加しています。ここで1を加えるのは、indexが0から始まるためです。
         `${index + 1},${result.title},${result.link},${result.snippet}`
     );
-    // CSVのヘッダーに「検索順位」カラムを追加します。
     return ["順位,Title,Link,Snippet", ...csvRows].join("\n");
   };
 
   // CSVダウンロードのハンドラ
   const handleDownloadCSV = () => {
     const csvString = convertToCSV(results);
-    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    // UTF-16エンコーディングに変換するためにBOM（バイト順マーク）を追加
+    const bom = new Uint8Array([0xFF, 0xFE]);
+     const encodedCSVString = new TextEncoder("utf-16le").encode(csvString);
+
+    const blob = new Blob([bom, encodedCSVString], { type: "text/csv;charset=utf-16le;" });
     const url = URL.createObjectURL(blob);
 
-    // 現在の日時を取得し、フォーマットする
     const date = new Date();
     const formattedDate = date.toISOString().slice(0, 19).replace(/-|:|T/g, "");
     const fileName = `search-results_${formattedDate}.csv`;
@@ -114,29 +113,26 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
           ))}
         </TableBody>
       </Table>
-      {
-        // このコンポーネントは、検索結果がある場合にのみ表示される
-        results.length === 0 ? null : (
-          <Box
-            sx={{
-              textAlign: "right",
-              p: 2,
-              position: "fixed",
-              bottom: 2,
-              right: 2,
-            }}
+      {results.length === 0 ? null : (
+        <Box
+          sx={{
+            textAlign: "right",
+            p: 2,
+            position: "fixed",
+            bottom: 2,
+            right: 2,
+          }}
+        >
+          <Button
+            onClick={handleDownloadCSV}
+            variant="contained"
+            color="success"
+            size="large"
           >
-            <Button
-              onClick={handleDownloadCSV}
-              variant="contained"
-              color="success"
-              size="large"
-            >
-              Download CSV
-            </Button>
-          </Box>
-        )
-      }
+            Download CSV
+          </Button>
+        </Box>
+      )}
     </TableContainer>
   );
 };
