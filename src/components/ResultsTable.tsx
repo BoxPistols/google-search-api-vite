@@ -21,7 +21,7 @@ type ResultsTableProps = {
   results: SearchResult[];
 };
 
-const StyledCell = (props: any) => (
+const StyledCell = ({ children }: { children: React.ReactNode }) => (
   <TableCell
     sx={{
       textWrap: "wrap",
@@ -31,11 +31,13 @@ const StyledCell = (props: any) => (
       fontSize: "0.875rem",
       p: 1,
     }}
-    {...props}
-  />
+  >
+    {children}
+  </TableCell>
 );
 
 const ResultsTable = ({ results }: ResultsTableProps) => {
+  
   // 検索結果をCSV形式に変換する関数
   const convertToCSV = (data: SearchResult[]) => {
     const csvRows = data.map(
@@ -45,12 +47,12 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
     return ["順位,Title,Link,Snippet", ...csvRows].join("\n");
   };
 
-  // CSVダウンロードのハンドラ
+  // CSVダウンロードのハンドラww
   const handleDownloadCSV = () => {
     const csvString = convertToCSV(results);
     // UTF-16エンコーディングに変換するためにBOM（バイト順マーク）を追加
     const bom = new Uint8Array([0xFF, 0xFE]);
-     const encodedCSVString = new TextEncoder("utf-16le").encode(csvString);
+    const encodedCSVString = new TextEncoder().encode(csvString);
 
     const blob = new Blob([bom, encodedCSVString], { type: "text/csv;charset=utf-16le;" });
     const url = URL.createObjectURL(blob);
