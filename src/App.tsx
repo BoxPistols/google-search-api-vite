@@ -4,7 +4,14 @@ import SearchForm from "./components/SearchForm";
 import ResultsTable from "./components/ResultsTable";
 import { Box, Container, Typography } from "@mui/material";
 import { Analytics } from "@vercel/analytics/react";
-import theme from "./util/theme";
+// import theme from "./util/theme";
+import { theme } from "@boxpistols/githubactions-test";
+import { CustomButton } from "@boxpistols/githubactions-test";
+// import type { CustomButtonProps } from "@boxpistols/githubactions-test";
+// const props: CustomButtonProps = {
+//   label: "Test Button",
+//   variant: "contained",
+// };
 
 const App = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -77,6 +84,10 @@ const App = () => {
       >
         Google Search Ranking Checker
       </Typography>
+      <CustomButton
+        label="Test Button"
+        onClick={() => console.log("Button Clicked")}
+      />
       <Typography
         textAlign={"center"}
         variant="subtitle1"
@@ -108,7 +119,7 @@ const App = () => {
           boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
           border: "2px solid #ececec",
           borderRadius: 2,
-          background: "linear-gradient(135deg, #6e88cf33, #d55b5b33)"
+          background: "linear-gradient(135deg, #6e88cf33, #d55b5b33)",
         }}
       >
         <SearchForm onSearch={handleSearch} />

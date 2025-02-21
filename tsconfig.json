@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@boxpistols/*": ["node_modules/@boxpistols/*/dist"]
+    },
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     /* Bundler mode */
@@ -22,9 +22,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "references": [
     {
       "path": "./tsconfig.node.json"
@@ -44,6 +42,6 @@
     "./.yarnrc.yml",
     "./.yarn-integrity",
     "./.yarn-metadata.json",
-    "./.yarn-tarball.tgz",
+    "./.yarn-tarball.tgz"
   ]
 }
