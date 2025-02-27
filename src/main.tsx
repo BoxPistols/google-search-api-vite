@@ -5,11 +5,12 @@ import App from "./App.tsx";
 import "./App.css";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
-import { theme } from "@boxpistols/githubactions-test";
 // emotionのキャッシュを生成
 
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
+import theme from "./util/theme.ts";
+// import { theme } from "@boxpistols/githubactions-test";
 
 // emotionのキャッシュを生成
 const cache = createCache({

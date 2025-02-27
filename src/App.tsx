@@ -4,14 +4,9 @@ import SearchForm from "./components/SearchForm";
 import ResultsTable from "./components/ResultsTable";
 import { Box, Container, Typography } from "@mui/material";
 import { Analytics } from "@vercel/analytics/react";
-// import theme from "./util/theme";
-import { theme } from "@boxpistols/githubactions-test";
-import { CustomButton } from "@boxpistols/githubactions-test";
-// import type { CustomButtonProps } from "@boxpistols/githubactions-test";
-// const props: CustomButtonProps = {
-//   label: "Test Button",
-//   variant: "contained",
-// };
+import theme from "./util/theme";
+// import { theme } from "@boxpistols/githubactions-test";
+// import { CustomButton } from "@boxpistols/githubactions-test";
 
 const App = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,10 +79,10 @@ const App = () => {
       >
         Google Search Ranking Checker
       </Typography>
-      <CustomButton
+      {/* <CustomButton
         label="Test Button"
         onClick={() => console.log("Button Clicked")}
-      />
+      /> */}
       <Typography
         textAlign={"center"}
         variant="subtitle1"
