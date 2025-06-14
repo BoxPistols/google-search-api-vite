@@ -39,17 +39,27 @@ const App = () => {
 
   const handleSearch = async (apiKey: string, cx: string, query: string) => {
     setLoading(true);
-    setResults([]); // 検索結果をリセット
-    setSearchKeyword(query); // 検索キーワードを保存
+    setResults([]);
+    setSearchKeyword(query);
 
-    // 最初の10件の結果を取得
     const firstPageResponse = await fetchResults(apiKey, cx, query, 1);
+    console.log('firstPageResponse:', firstPageResponse);
     const firstPageResults = firstPageResponse.items || [];
-    // 次の10件の結果を取得
+
     const secondPageResponse = await fetchResults(apiKey, cx, query, 11);
+    console.log('secondPageResponse:', secondPageResponse);
     const secondPageResults = secondPageResponse.items || [];
-    // 結果を結合して状態を更新
-    setResults([...firstPageResults, ...secondPageResults]);
+
+    const convertToSearchResult = (item: any) => ({
+      title: item.title,
+      link: item.link,
+      snippet: item.snippet,
+    });
+
+    setResults([
+      ...firstPageResults.map(convertToSearchResult),
+      ...secondPageResults.map(convertToSearchResult),
+    ]);
     setLoading(false);
 
     // クエリ消費数を更新

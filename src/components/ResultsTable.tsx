@@ -69,6 +69,8 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
     URL.revokeObjectURL(url);
   };
 
+  console.log('渡すresults:', results);
+
   return (
     <TableContainer
       component={Paper}
