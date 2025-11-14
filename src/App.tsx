@@ -1,34 +1,18 @@
 // src/App.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SearchForm from './components/SearchForm';
 import ResultsTable from './components/ResultsTable';
-import { Box, Container, Typography } from '@mui/material';
+import SearchHistory from './components/SearchHistory';
+import SearchStats from './components/SearchStats';
+import DomainAnalysis from './components/DomainAnalysis';
+import { Box, Container, Typography, ThemeProvider, CssBaseline, IconButton } from '@mui/material';
 import { Analytics } from '@vercel/analytics/react';
+import { createTheme } from '@mui/material/styles';
+import type { SearchResult } from './types/search';
+import { saveSearchToHistory, getSearchStats } from './utils/localStorage';
 import theme from './util/theme';
-// import { theme } from "@boxpistols/githubactions-test";
-// import { CustomButton } from "@boxpistols/githubactions-test";
 
 const App = () => {
-  interface SearchResult {
-    title: string;
-    link: string;
-    snippet: string;
-    displayLink: string;
-    formattedUrl: string;
-    htmlSnippet: string;
-    htmlTitle: string;
-    pagemap?: {
-      cse_thumbnail?: Array<{
-        src: string;
-        width: string;
-        height: string;
-      }>;
-      cse_image?: Array<{
-        src: string;
-      }>;
-    };
-  }
-
   const [results, setResults] = useState<SearchResult[]>([]); // 検索結果を格納する状態
   // 検索中にローディングスピナーを表示するための状態 (後述)
   const [loading, setLoading] = useState(false);
@@ -36,6 +20,22 @@ const App = () => {
   const [queriesUsed, setQueriesUsed] = useState(0);
   // 検索キーワードを保存する状態を追加
   const [searchKeyword, setSearchKeyword] = useState('');
+  // 統計情報の状態
+  const [stats, setStats] = useState(getSearchStats());
+  // ダークモードの状態
+  const [darkMode, setDarkMode] = useState(false);
+
+  // テーマの設定
+  const currentTheme = createTheme(theme, {
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+    },
+  });
+
+  useEffect(() => {
+    // ページロード時に統計を更新
+    setStats(getSearchStats());
+  }, [results]);
 
   const handleSearch = async (apiKey: string, cx: string, query: string) => {
     setLoading(true);
@@ -50,16 +50,9 @@ const App = () => {
     console.log('secondPageResponse:', secondPageResponse);
     const secondPageResults = secondPageResponse.items || [];
 
-    const convertToSearchResult = (item: any) => ({
-      title: item.title,
-      link: item.link,
-      snippet: item.snippet,
-    });
+    const allResults: SearchResult[] = [...firstPageResults, ...secondPageResults];
 
-    setResults([
-      ...firstPageResults.map(convertToSearchResult),
-      ...secondPageResults.map(convertToSearchResult),
-    ]);
+    setResults(allResults);
     setLoading(false);
 
     // クエリ消費数を更新
@@ -69,6 +62,24 @@ const App = () => {
     const newQueries = 2 * keywordCount;
     // クエリ消費数を更新
     setQueriesUsed(prev => prev + newQueries);
+
+    // 検索履歴に保存
+    saveSearchToHistory({
+      id: `${Date.now()}-${query}`,
+      query,
+      timestamp: Date.now(),
+      results: allResults,
+      queriesUsed: newQueries,
+    });
+
+    // 統計を更新
+    setStats(getSearchStats());
+  };
+
+  const handleSelectHistory = (history: any) => {
+    setResults(history.results);
+    setSearchKeyword(history.query);
+    setQueriesUsed(prev => prev + history.queriesUsed);
   };
   // 残りのクエリ数を計算
   // const remainingQueries = 1000 - queriesUsed
@@ -108,96 +119,122 @@ const App = () => {
   };
 
   return (
-    <>
-      <Typography
-        component="h1"
-        variant="h2"
-        mt={'2vw'}
-        textAlign={'center'}
-        color={theme.palette.primary.main}
-        sx={{
-          fontSize: { md: '2rem', xs: '1.5rem' },
-        }}
-      >
-        Google Search Ranking Checker
-      </Typography>
-      {/* <CustomButton
-        label="Test Button"
-        onClick={() => console.log("Button Clicked")}
-      /> */}
-      <Typography
-        textAlign={'center'}
-        variant="subtitle1"
-        m={1}
-        mb={0.25}
-        color={theme.palette.secondary.main}
-        sx={{
-          fontSize: { md: '0.75rem', xs: '0.5rem' },
-          textAlign: { md: 'center', xs: 'left' },
-        }}
-      >
-        このサービスは、Google純正のSearch
-        APIを利用し特定の検索ワードにおける検索順位結果を調べ、簡潔にレポーティングするサービスです
-      </Typography>
-      <Typography
-        textAlign={'center'}
-        variant="subtitle2"
-        mx={1}
-        color={theme.palette.secondary.main}
-      >
-        現在20件(1位から10位、11位から20位)の検索結果を結合して取得しています
-      </Typography>
-
-      <Container
-        sx={{
-          margin: '2vh auto',
-          p: 3,
-          pb: 4,
-          boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)',
-          border: '2px solid #ececec',
-          borderRadius: 2,
-          background: 'linear-gradient(135deg, #6e88cf33, #d55b5b33)',
-        }}
-      >
-        <SearchForm onSearch={handleSearch} />
-        <Box
-          sx={{
-            display: { md: 'flex', xs: 'block' },
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 3,
-          }}
-        >
-          <Typography
-            variant="subtitle2"
-            color={theme.palette.secondary.main}
+    <ThemeProvider theme={currentTheme}>
+      <CssBaseline />
+      <Box sx={{ position: 'relative', minHeight: '100vh', pb: 8 }}>
+        {/* ダークモード切り替えボタン */}
+        <Box sx={{ position: 'fixed', top: 16, right: 16, zIndex: 1100 }}>
+          <IconButton
+            onClick={() => setDarkMode(!darkMode)}
+            color="primary"
             sx={{
-              verticalAlign: 'middle',
+              backgroundColor: 'background.paper',
+              boxShadow: 3,
+              '&:hover': { backgroundColor: 'action.hover' },
             }}
           >
-            利用クエリ数{'：'}
-            <Typography
-              component="span"
-              fontWeight={theme.typography.fontWeightBold}
-              color={theme.palette.primary.main}
-            >
-              {remainingQueries > 0 ? remainingQueries : null}
-            </Typography>{' '}
-            (目安)
-          </Typography>
-          <Typography variant="subtitle2" color={theme.palette.secondary.main}>
-            Google Search API基準 = 1回の検索で2クエリ以上消費。 1クエリ / キーワード x 2ページ分 /
-            1日に100クエリまで(24時間でリセット)
-          </Typography>
+            <Typography fontSize="1.5rem">{darkMode ? '☀️' : '🌙'}</Typography>
+          </IconButton>
         </Box>
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <ResultsTable results={results} searchKeyword={searchKeyword} />
-        )}
-      </Container>
-      <Analytics />
-    </>
+
+        <Typography
+          component="h1"
+          variant="h2"
+          mt={'2vw'}
+          textAlign={'center'}
+          color="primary"
+          sx={{
+            fontSize: { md: '2.5rem', xs: '1.75rem' },
+            fontWeight: 'bold',
+            mb: 2,
+          }}
+        >
+          🔍 Google Search Ranking Checker
+        </Typography>
+
+        <Typography
+          textAlign={'center'}
+          variant="subtitle1"
+          m={1}
+          mb={0.25}
+          color="text.secondary"
+          sx={{
+            fontSize: { md: '0.875rem', xs: '0.75rem' },
+          }}
+        >
+          Google純正のSearch
+          APIを利用し、特定の検索ワードにおける検索順位結果を調べ、簡潔にレポーティングするSEO担当者向けツール
+        </Typography>
+        <Typography textAlign={'center'} variant="subtitle2" mx={1} color="text.secondary" mb={3}>
+          現在20件(1位から10位、11位から20位)の検索結果を結合して取得しています
+        </Typography>
+
+        <Container maxWidth="xl">
+          {/* 統計情報 */}
+          {stats.totalSearches > 0 && (
+            <SearchStats
+              totalSearches={stats.totalSearches}
+              totalQueries={stats.totalQueries}
+              lastSearch={stats.lastSearch}
+            />
+          )}
+
+          {/* 検索履歴 */}
+          <SearchHistory onSelectHistory={handleSelectHistory} />
+
+          {/* メイン検索フォーム */}
+          <Box
+            sx={{
+              p: 3,
+              pb: 4,
+              mb: 3,
+              boxShadow: 4,
+              borderRadius: 3,
+              backgroundColor: 'background.paper',
+              border: '2px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <SearchForm onSearch={handleSearch} />
+            <Box
+              sx={{
+                display: { md: 'flex', xs: 'block' },
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 3,
+                mt: 2,
+              }}
+            >
+              <Typography variant="subtitle2" color="text.secondary">
+                今回の利用クエリ数:
+                <Typography component="span" fontWeight="bold" color="primary" ml={1}>
+                  {remainingQueries > 0 ? remainingQueries : 0}
+                </Typography>
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                ※ Google Search API基準: 1回の検索で2クエリ以上消費 (1クエリ/キーワード × 2ページ分) /
+                1日に100クエリまで
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* ドメイン分析 */}
+          {results.length > 0 && <DomainAnalysis results={results} />}
+
+          {/* 検索結果 */}
+          {loading ? (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Typography variant="h6" color="text.secondary">
+                🔄 検索中...
+              </Typography>
+            </Box>
+          ) : (
+            <ResultsTable results={results} searchKeyword={searchKeyword} />
+          )}
+        </Container>
+        <Analytics />
+      </Box>
+    </ThemeProvider>
   );
 };
 

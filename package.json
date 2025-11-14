@@ -20,7 +20,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@boxpistols/githubactions-test": "^0.1.4",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
