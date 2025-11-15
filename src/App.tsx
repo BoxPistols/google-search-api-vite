@@ -6,9 +6,12 @@ import SearchHistory from './components/SearchHistory';
 import SearchStats from './components/SearchStats';
 import DomainAnalysis from './components/DomainAnalysis';
 import QuotaDisplay from './components/QuotaDisplay';
-import { Box, Container, Typography, ThemeProvider, CssBaseline, IconButton } from '@mui/material';
+import UserTypeSelector from './components/UserTypeSelector';
+import { Box, Container, Typography, ThemeProvider, CssBaseline, IconButton, CircularProgress } from '@mui/material';
 import { Analytics } from '@vercel/analytics/react';
-import { createTheme } from '@mui/material/styles';
+import SearchIcon from '@mui/icons-material/Search';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import type { SearchResult } from './types/search';
 import { saveSearchToHistory, getSearchStats } from './utils/localStorage';
 import {
@@ -16,7 +19,7 @@ import {
   canExecuteQuery,
   getRemainingQueries,
 } from './utils/apiQuotaManager';
-import theme from './util/theme';
+import { createCustomTheme } from './util/theme';
 
 const App = () => {
   const [results, setResults] = useState<SearchResult[]>([]); // 検索結果を格納する状態
@@ -28,15 +31,19 @@ const App = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   // 統計情報の状態
   const [stats, setStats] = useState(getSearchStats());
-  // ダークモードの状態
-  const [darkMode, setDarkMode] = useState(false);
+  // ダークモードの状態（localStorageから読み込み）
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved === 'true';
+  });
 
   // テーマの設定
-  const currentTheme = createTheme(theme, {
-    palette: {
-      mode: darkMode ? 'dark' : 'light',
-    },
-  });
+  const currentTheme = createCustomTheme(darkMode ? 'dark' : 'light');
+
+  // ダークモードの変更をlocalStorageに保存
+  useEffect(() => {
+    localStorage.setItem('darkMode', String(darkMode));
+  }, [darkMode]);
 
   useEffect(() => {
     // ページロード時に統計を更新
@@ -158,25 +165,27 @@ const App = () => {
               boxShadow: 3,
               '&:hover': { backgroundColor: 'action.hover' },
             }}
+            aria-label="ダークモード切り替え"
           >
-            <Typography fontSize="1.5rem">{darkMode ? '☀️' : '🌙'}</Typography>
+            {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
         </Box>
 
-        <Typography
-          component="h1"
-          variant="h2"
-          mt={'2vw'}
-          textAlign={'center'}
-          color="primary"
-          sx={{
-            fontSize: { md: '2.5rem', xs: '1.75rem' },
-            fontWeight: 'bold',
-            mb: 2,
-          }}
-        >
-          🔍 Google Search Ranking Checker
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mt: '2vw', mb: 2 }}>
+          <SearchIcon sx={{ fontSize: { md: '2.5rem', xs: '1.75rem' }, color: 'primary.main' }} />
+          <Typography
+            component="h1"
+            variant="h2"
+            textAlign={'center'}
+            color="primary"
+            sx={{
+              fontSize: { md: '2.5rem', xs: '1.75rem' },
+              fontWeight: 'bold',
+            }}
+          >
+            Google Search Ranking Checker
+          </Typography>
+        </Box>
 
         <Typography
           textAlign={'center'}
@@ -196,6 +205,9 @@ const App = () => {
         </Typography>
 
         <Container maxWidth="xl">
+          {/* ユーザータイプ選択 */}
+          <UserTypeSelector onUserTypeChange={() => setStats(getSearchStats())} />
+
           {/* APIクォータ表示 */}
           <QuotaDisplay onQuotaUpdate={() => setStats(getSearchStats())} />
 
@@ -252,9 +264,10 @@ const App = () => {
 
           {/* 検索結果 */}
           {loading ? (
-            <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 8 }}>
+              <CircularProgress size={48} />
               <Typography variant="h6" color="text.secondary">
-                🔄 検索中...
+                検索中...
               </Typography>
             </Box>
           ) : (

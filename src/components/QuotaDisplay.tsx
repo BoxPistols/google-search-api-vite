@@ -1,14 +1,17 @@
 // src/components/QuotaDisplay.tsx
 import { useState, useEffect } from 'react';
 import { Box, Typography, LinearProgress, Paper, Chip, Tooltip } from '@mui/material';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import WarningIcon from '@mui/icons-material/Warning';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import {
   getQuotaData,
   getRemainingQueries,
   getQuotaUsagePercentage,
   getTimeUntilResetFormatted,
-  QUOTA_LIMIT,
+  getQuotaLimit,
 } from '../utils/apiQuotaManager';
-import theme from '../util/theme';
 
 interface QuotaDisplayProps {
   onQuotaUpdate?: () => void;
@@ -17,12 +20,14 @@ interface QuotaDisplayProps {
 const QuotaDisplay = ({ onQuotaUpdate }: QuotaDisplayProps) => {
   const [quotaData, setQuotaData] = useState(getQuotaData());
   const [timeUntilReset, setTimeUntilReset] = useState(getTimeUntilResetFormatted());
+  const [quotaLimit, setQuotaLimit] = useState(getQuotaLimit());
 
   useEffect(() => {
     // 定期的にクォータデータを更新
     const interval = setInterval(() => {
       setQuotaData(getQuotaData());
       setTimeUntilReset(getTimeUntilResetFormatted());
+      setQuotaLimit(getQuotaLimit());
       onQuotaUpdate?.();
     }, 60000); // 1分ごとに更新
 
@@ -31,8 +36,9 @@ const QuotaDisplay = ({ onQuotaUpdate }: QuotaDisplayProps) => {
 
   const remaining = getRemainingQueries();
   const usagePercentage = getQuotaUsagePercentage();
-  const isLowQuota = remaining < 20;
-  const isCriticalQuota = remaining < 10;
+  // クォータ制限の10%未満を警告、5%未満を危機的と判定
+  const isLowQuota = remaining < quotaLimit * 0.1;
+  const isCriticalQuota = remaining < quotaLimit * 0.05;
 
   // 進捗バーの色を決定
   const getProgressColor = () => {
@@ -47,27 +53,26 @@ const QuotaDisplay = ({ onQuotaUpdate }: QuotaDisplayProps) => {
       sx={{
         p: 3,
         mb: 3,
-        background: isCriticalQuota
-          ? 'linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%)'
-          : isLowQuota
-          ? 'linear-gradient(135deg, #fffbf0 0%, #fff4e0 100%)'
-          : 'linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%)',
         border: '2px solid',
         borderColor: isCriticalQuota
-          ? theme.palette.error.light
+          ? 'error.light'
           : isLowQuota
-          ? theme.palette.warning.light
-          : theme.palette.primary.light,
+          ? 'warning.light'
+          : 'primary.light',
         borderRadius: 3,
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" fontWeight="bold" color="primary">
-          📊 API使用状況（1日の制限）
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <BarChartIcon color="primary" />
+          <Typography variant="h6" fontWeight="bold" color="primary">
+            API使用状況（1日の制限）
+          </Typography>
+        </Box>
         <Tooltip title="0:00にリセットされます">
           <Chip
-            label={`⏰ リセットまで: ${timeUntilReset}`}
+            icon={<AccessTimeIcon />}
+            label={`リセットまで: ${timeUntilReset}`}
             color={isLowQuota ? 'warning' : 'info'}
             variant="outlined"
             size="small"
@@ -78,7 +83,7 @@ const QuotaDisplay = ({ onQuotaUpdate }: QuotaDisplayProps) => {
       <Box sx={{ mb: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="body2" color="text.secondary">
-            使用済み: {quotaData.queriesUsed} / {QUOTA_LIMIT} クエリ
+            使用済み: {quotaData.queriesUsed} / {quotaLimit} クエリ
           </Typography>
           <Typography
             variant="body2"
@@ -95,7 +100,6 @@ const QuotaDisplay = ({ onQuotaUpdate }: QuotaDisplayProps) => {
           sx={{
             height: 10,
             borderRadius: 5,
-            backgroundColor: theme.palette.grey[200],
           }}
         />
         <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
@@ -106,15 +110,20 @@ const QuotaDisplay = ({ onQuotaUpdate }: QuotaDisplayProps) => {
       {isCriticalQuota && (
         <Box
           sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
             p: 1.5,
-            backgroundColor: theme.palette.error.light + '20',
+            backgroundColor: 'error.light',
+            opacity: 0.15,
             borderRadius: 1,
             border: '1px solid',
-            borderColor: theme.palette.error.light,
+            borderColor: 'error.light',
           }}
         >
+          <WarningIcon color="error" />
           <Typography variant="body2" color="error" fontWeight="bold">
-            ⚠️ クエリ残数が少なくなっています。本日のAPI使用は{timeUntilReset}後にリセットされます。
+            クエリ残数が少なくなっています。本日のAPI使用は{timeUntilReset}後にリセットされます。
           </Typography>
         </Box>
       )}
@@ -122,23 +131,29 @@ const QuotaDisplay = ({ onQuotaUpdate }: QuotaDisplayProps) => {
       {isLowQuota && !isCriticalQuota && (
         <Box
           sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
             p: 1.5,
-            backgroundColor: theme.palette.warning.light + '20',
+            backgroundColor: 'warning.light',
+            opacity: 0.15,
             borderRadius: 1,
             border: '1px solid',
-            borderColor: theme.palette.warning.light,
+            borderColor: 'warning.light',
           }}
         >
+          <LightbulbIcon color="warning" />
           <Typography variant="body2" color="warning.main" fontWeight="bold">
-            💡 クエリ残数が少なくなっています。計画的にご利用ください。
+            クエリ残数が少なくなっています。計画的にご利用ください。
           </Typography>
         </Box>
       )}
 
       <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
         <Typography variant="caption" color="text.secondary">
-          ※ Google Custom Search APIの無料枠は1日100クエリです。
+          ※ 現在のクォータ制限: {quotaLimit}クエリ/日
           <br />※ 1回の検索で2クエリ（1〜10位、11〜20位）× キーワード数を消費します。
+          <br />※ ユーザータイプ設定で制限を変更できます。
         </Typography>
       </Box>
     </Paper>

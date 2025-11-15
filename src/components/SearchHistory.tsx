@@ -12,9 +12,12 @@ import {
   Chip,
   Paper,
 } from '@mui/material';
+import HistoryIcon from '@mui/icons-material/History';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { getSearchHistory, clearSearchHistory } from '../utils/localStorage';
 import type { SearchHistory as SearchHistoryType } from '../types/search';
-import theme from '../util/theme';
 
 interface SearchHistoryProps {
   onSelectHistory: (history: SearchHistoryType) => void;
@@ -61,7 +64,6 @@ const SearchHistory = ({ onSelectHistory }: SearchHistoryProps) => {
       sx={{
         mb: 3,
         p: 2,
-        backgroundColor: theme.palette.background.paper,
         borderRadius: 2,
       }}
     >
@@ -75,8 +77,9 @@ const SearchHistory = ({ onSelectHistory }: SearchHistoryProps) => {
         onClick={() => setExpanded(!expanded)}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <HistoryIcon color="primary" />
           <Typography variant="h6" color="primary">
-            📋 検索履歴 ({history.length}件)
+            検索履歴 ({history.length}件)
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -89,9 +92,9 @@ const SearchHistory = ({ onSelectHistory }: SearchHistoryProps) => {
             color="error"
             title="履歴をクリア"
           >
-            <Typography>🗑️</Typography>
+            <DeleteIcon />
           </IconButton>
-          <Typography>{expanded ? '▲' : '▼'}</Typography>
+          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </Box>
       </Box>
 
@@ -104,7 +107,7 @@ const SearchHistory = ({ onSelectHistory }: SearchHistoryProps) => {
               sx={{
                 mb: 1,
                 border: '1px solid',
-                borderColor: theme.palette.divider,
+                borderColor: 'divider',
                 borderRadius: 1,
               }}
             >

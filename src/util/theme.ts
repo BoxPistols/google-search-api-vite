@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, PaletteMode } from '@mui/material/styles';
 
 const fontWeights = {
   light: 300,
@@ -17,15 +17,11 @@ declare module '@mui/material/styles' {
     lighter?: string;
   }
 }
-// カラーの定義
-const common = {
-  black: '#234',
-  white: '#fff',
-};
 
-// Define your custom theme
-const theme = createTheme({
+// ライトモードとダークモードのカラー定義を関数化
+const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
+    mode,
     primary: {
       main: '#1d6dd5',
       dark: '#1b4071',
@@ -62,128 +58,155 @@ const theme = createTheme({
       light: '#4dd2e1',
       lighter: '#c6f0f5',
     },
-    text: {
-      primary: '#333',
-      secondary: '#666',
-      disabled: '#ccc',
-    },
-    common,
-    background: {
-      default: '#fff',
-      paper: '#fff',
-    },
-    divider: '#ccc',
+    ...(mode === 'light'
+      ? {
+          // ライトモード
+          text: {
+            primary: '#333',
+            secondary: '#666',
+            disabled: '#ccc',
+          },
+          background: {
+            default: '#fff',
+            paper: '#fff',
+          },
+          divider: '#ccc',
+        }
+      : {
+          // ダークモード
+          text: {
+            primary: '#e0e0e0',
+            secondary: '#b0b0b0',
+            disabled: '#666',
+          },
+          background: {
+            default: '#121212',
+            paper: '#1e1e1e',
+          },
+          divider: '#444',
+        }),
   },
-  typography: {
-    fontFamily: `Nunito Sans, Helvetica Neue, Arial, sans-serif`,
-    fontWeightRegular: fontWeights.normal,
-    fontWeightMedium: fontWeights.medium,
-    fontWeightBold: fontWeights.bold,
-    h1: {
-      fontWeight: fontWeights.bold,
-      fontSize: 'clump(2.5rem, 8vw, 3rem)',
-      letterSpacing: '-0.05em',
-    },
-    h2: {
-      fontWeight: fontWeights.bold,
-      fontSize: '2rem',
-      letterSpacing: '-0.05em',
-    },
-    h3: {
-      fontWeight: fontWeights.bold,
-      fontSize: '1.75rem',
-      letterSpacing: '-0.05em',
-    },
-    h4: {
-      fontWeight: fontWeights.bold,
-      fontSize: '1.5rem',
-      letterSpacing: '-0.05em',
-    },
-    h5: {
-      fontWeight: fontWeights.bold,
-      fontSize: '1.25rem',
-      letterSpacing: '-0.05em',
-    },
-    h6: {
-      fontWeight: fontWeights.bold,
-      fontSize: '1.125rem',
-      letterSpacing: '-0.05em',
-    },
-    subtitle1: {
-      fontWeight: fontWeights.normal,
-      fontSize: '0.875rem',
-      letterSpacing: '-0.05em',
-    },
-    subtitle2: {
-      fontWeight: fontWeights.normal,
-      fontSize: '0.75rem',
-      letterSpacing: '-0.05em',
-    },
-    body1: {
-      fontWeight: fontWeights.normal,
-      fontSize: '1rem',
-      letterSpacing: '-0.05em',
-    },
-    body2: {
-      fontWeight: fontWeights.normal,
-      fontSize: '0.875rem',
-      letterSpacing: '-0.05em',
-    },
-    button: {
-      fontWeight: fontWeights.medium,
-      fontSize: '0.875rem',
-      letterSpacing: '-0.05em',
-      textTransform: 'uppercase',
-    },
-    caption: {
-      fontWeight: fontWeights.normal,
-      fontSize: '0.75rem',
-      letterSpacing: '-0.05em',
-    },
-    overline: {
-      fontWeight: fontWeights.normal,
-      fontSize: '0.75rem',
-      letterSpacing: '-0.05em',
-      textTransform: 'uppercase',
-    },
-  },
-  components: {
-    // ボタンのスタイル
-    MuiButton: {
-      defaultProps: {
-        variant: 'contained', // デフォルトのボタンの種類を設定
-        disableElevation: true, // デフォルトの影を削除
-        disableRipple: true, // デフォルトのrippleを削除
+});
+
+// カスタムテーマを生成する関数
+export const createCustomTheme = (mode: PaletteMode = 'light') => {
+  const designTokens = getDesignTokens(mode);
+
+  return createTheme({
+    ...designTokens,
+    typography: {
+      fontFamily: `Nunito Sans, Helvetica Neue, Arial, sans-serif`,
+      fontWeightRegular: fontWeights.normal,
+      fontWeightMedium: fontWeights.medium,
+      fontWeightBold: fontWeights.bold,
+      h1: {
+        fontWeight: fontWeights.bold,
+        fontSize: 'clump(2.5rem, 8vw, 3rem)',
+        letterSpacing: '-0.05em',
       },
-      styleOverrides: {
-        root: {
-          textTransform: 'uppercase',
-          fontWeight: fontWeights.medium,
-          borderRadius: '4em',
+      h2: {
+        fontWeight: fontWeights.bold,
+        fontSize: '2rem',
+        letterSpacing: '-0.05em',
+      },
+      h3: {
+        fontWeight: fontWeights.bold,
+        fontSize: '1.75rem',
+        letterSpacing: '-0.05em',
+      },
+      h4: {
+        fontWeight: fontWeights.bold,
+        fontSize: '1.5rem',
+        letterSpacing: '-0.05em',
+      },
+      h5: {
+        fontWeight: fontWeights.bold,
+        fontSize: '1.25rem',
+        letterSpacing: '-0.05em',
+      },
+      h6: {
+        fontWeight: fontWeights.bold,
+        fontSize: '1.125rem',
+        letterSpacing: '-0.05em',
+      },
+      subtitle1: {
+        fontWeight: fontWeights.normal,
+        fontSize: '0.875rem',
+        letterSpacing: '-0.05em',
+      },
+      subtitle2: {
+        fontWeight: fontWeights.normal,
+        fontSize: '0.75rem',
+        letterSpacing: '-0.05em',
+      },
+      body1: {
+        fontWeight: fontWeights.normal,
+        fontSize: '1rem',
+        letterSpacing: '-0.05em',
+      },
+      body2: {
+        fontWeight: fontWeights.normal,
+        fontSize: '0.875rem',
+        letterSpacing: '-0.05em',
+      },
+      button: {
+        fontWeight: fontWeights.medium,
+        fontSize: '0.875rem',
+        letterSpacing: '-0.05em',
+        textTransform: 'uppercase',
+      },
+      caption: {
+        fontWeight: fontWeights.normal,
+        fontSize: '0.75rem',
+        letterSpacing: '-0.05em',
+      },
+      overline: {
+        fontWeight: fontWeights.normal,
+        fontSize: '0.75rem',
+        letterSpacing: '-0.05em',
+        textTransform: 'uppercase',
+      },
+    },
+    components: {
+      // ボタンのスタイル
+      MuiButton: {
+        defaultProps: {
+          variant: 'contained', // デフォルトのボタンの種類を設定
+          disableElevation: true, // デフォルトの影を削除
+          disableRipple: true, // デフォルトのrippleを削除
         },
-        contained: {
-          // 背景がcontainedの時のスタイル
-          '&.MuiButton-contained.MuiButton-root': {
-            // textContrast カラーの設定
-            color: common.white,
-            // disabledの時のスタイル
-            '&.Mui-disabled': {
-              backgroundColor: '#ccc',
-              color: '#666',
+        styleOverrides: {
+          root: {
+            textTransform: 'uppercase',
+            fontWeight: fontWeights.medium,
+            borderRadius: '4em',
+          },
+          contained: {
+            // 背景がcontainedの時のスタイル
+            '&.MuiButton-contained.MuiButton-root': {
+              // textContrast カラーの設定
+              color: '#fff',
+              // disabledの時のスタイル
+              '&.Mui-disabled': {
+                backgroundColor: '#ccc',
+                color: '#666',
+              },
             },
           },
         },
       },
+      // MuiTypography: { styleOverrides: { root: {},}, },
+      // MuiCssBaseline: { styleOverrides: { body: {}, }, },
     },
-    // MuiTypography: { styleOverrides: { root: {},}, },
-    // MuiCssBaseline: { styleOverrides: { body: {}, }, },
-  },
-  // 現在1=8px の設定
-  spacing: 8,
-  // 全体の角丸
-  shape: {
-    borderRadius: 6,
-  },
-});
+    // 現在1=8px の設定
+    spacing: 8,
+    // 全体の角丸
+    shape: {
+      borderRadius: 6,
+    },
+  });
+};
 
+// デフォルトのライトモードテーマをエクスポート（後方互換性のため）
+const theme = createCustomTheme('light');
 export default theme;
