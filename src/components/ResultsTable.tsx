@@ -47,29 +47,48 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
     setDetailOpen(true);
   };
 
-  // CSVダウンロードのハンドラー関数
+  // CSV用に文字列をエスケープする関数（Windows/Mac両対応）
+  const escapeCSVField = (field: string | number): string => {
+    const str = String(field);
+    // 改行を空白に置換（CSVの可読性向上）
+    const cleaned = str.replace(/[\r\n]+/g, ' ').trim();
+    // ダブルクォートをエスケープ
+    const escaped = cleaned.replace(/"/g, '""');
+    return `"${escaped}"`;
+  };
+
+  // CSVダウンロードのハンドラー関数（Windows/Mac両対応）
   const handleDownloadCSV = () => {
-    // BOMを追加してUTF-8で正しく認識されるようにする
+    // BOM（Byte Order Mark）を追加してUTF-8で正しく認識されるようにする
+    // これによりExcel for Windows/Macで日本語が正しく表示される
     const BOM = '\uFEFF';
-    const headers = ['順位', 'タイトル', 'リンク', '説明'];
-    const csvContent = results.map((result, index) => [
-      index + 1,
-      result.title.replace(/"/g, '""'), // ダブルクォートをエスケープ
-      result.link,
-      result.snippet.replace(/"/g, '""'),
-    ]);
 
-    const csvString =
-      BOM +
-      [headers.join(','), ...csvContent.map(row => row.map(cell => `"${cell}"`).join(','))].join(
-        '\n'
-      );
+    const headers = ['順位', 'タイトル', 'URL', '説明', '表示URL'];
+    const headerRow = headers.map(h => escapeCSVField(h)).join(',');
 
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8' });
+    const dataRows = results.map((result, index) => {
+      return [
+        index + 1,
+        result.title,
+        result.link,
+        result.snippet,
+        result.displayLink || result.link,
+      ].map(field => escapeCSVField(field)).join(',');
+    });
+
+    // Windows互換性のため改行コードを\r\nに統一
+    const csvString = BOM + [headerRow, ...dataRows].join('\r\n');
+
+    // UTF-8 BOM付きでBlobを作成
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `search_results_${searchKeyword}_${new Date().toISOString().slice(0, 10)}.csv`;
+
+    // ファイル名にタイムスタンプを含める
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    link.download = `search_results_${searchKeyword}_${timestamp}.csv`;
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

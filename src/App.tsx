@@ -5,11 +5,17 @@ import ResultsTable from './components/ResultsTable';
 import SearchHistory from './components/SearchHistory';
 import SearchStats from './components/SearchStats';
 import DomainAnalysis from './components/DomainAnalysis';
+import QuotaDisplay from './components/QuotaDisplay';
 import { Box, Container, Typography, ThemeProvider, CssBaseline, IconButton } from '@mui/material';
 import { Analytics } from '@vercel/analytics/react';
 import { createTheme } from '@mui/material/styles';
 import type { SearchResult } from './types/search';
 import { saveSearchToHistory, getSearchStats } from './utils/localStorage';
+import {
+  recordQueryUsage,
+  canExecuteQuery,
+  getRemainingQueries,
+} from './utils/apiQuotaManager';
 import theme from './util/theme';
 
 const App = () => {
@@ -38,42 +44,62 @@ const App = () => {
   }, [results]);
 
   const handleSearch = async (apiKey: string, cx: string, query: string) => {
+    // クエリ消費数を計算
+    const keywordCount = query.trim().split(/\s+/).length;
+    const newQueries = 2 * keywordCount; // 2ページ分取得するため
+
+    // APIクォータのチェック
+    if (!canExecuteQuery(newQueries)) {
+      const remaining = getRemainingQueries();
+      alert(
+        `APIクォータが不足しています。\n` +
+        `必要なクエリ数: ${newQueries}\n` +
+        `残りクエリ数: ${remaining}\n\n` +
+        `クォータは翌日0:00にリセットされます。`
+      );
+      return;
+    }
+
     setLoading(true);
     setResults([]);
     setSearchKeyword(query);
 
-    const firstPageResponse = await fetchResults(apiKey, cx, query, 1);
-    console.log('firstPageResponse:', firstPageResponse);
-    const firstPageResults = firstPageResponse.items || [];
+    try {
+      const firstPageResponse = await fetchResults(apiKey, cx, query, 1);
+      console.log('firstPageResponse:', firstPageResponse);
+      const firstPageResults = firstPageResponse.items || [];
 
-    const secondPageResponse = await fetchResults(apiKey, cx, query, 11);
-    console.log('secondPageResponse:', secondPageResponse);
-    const secondPageResults = secondPageResponse.items || [];
+      const secondPageResponse = await fetchResults(apiKey, cx, query, 11);
+      console.log('secondPageResponse:', secondPageResponse);
+      const secondPageResults = secondPageResponse.items || [];
 
-    const allResults: SearchResult[] = [...firstPageResults, ...secondPageResults];
+      const allResults: SearchResult[] = [...firstPageResults, ...secondPageResults];
 
-    setResults(allResults);
-    setLoading(false);
+      setResults(allResults);
 
-    // クエリ消費数を更新
-    // キーワード数を取得（スペース区切りで単語数をカウント）
-    const keywordCount = query.trim().split(/\s+/).length;
-    // 2回のリクエストで20件の結果を取得するため、2クエリ消費する
-    const newQueries = 2 * keywordCount;
-    // クエリ消費数を更新
-    setQueriesUsed(prev => prev + newQueries);
+      // APIクォータを記録
+      recordQueryUsage(query, newQueries);
 
-    // 検索履歴に保存
-    saveSearchToHistory({
-      id: `${Date.now()}-${query}`,
-      query,
-      timestamp: Date.now(),
-      results: allResults,
-      queriesUsed: newQueries,
-    });
+      // クエリ消費数を更新
+      setQueriesUsed(prev => prev + newQueries);
 
-    // 統計を更新
-    setStats(getSearchStats());
+      // 検索履歴に保存
+      saveSearchToHistory({
+        id: `${Date.now()}-${query}`,
+        query,
+        timestamp: Date.now(),
+        results: allResults,
+        queriesUsed: newQueries,
+      });
+
+      // 統計を更新
+      setStats(getSearchStats());
+    } catch (error) {
+      console.error('検索エラー:', error);
+      alert('検索中にエラーが発生しました。APIキーとSearch IDを確認してください。');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectHistory = (history: any) => {
@@ -170,6 +196,9 @@ const App = () => {
         </Typography>
 
         <Container maxWidth="xl">
+          {/* APIクォータ表示 */}
+          <QuotaDisplay onQuotaUpdate={() => setStats(getSearchStats())} />
+
           {/* 統計情報 */}
           {stats.totalSearches > 0 && (
             <SearchStats
