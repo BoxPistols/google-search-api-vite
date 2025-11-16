@@ -11,13 +11,16 @@ import {
   Divider,
   Chip,
   CircularProgress,
+  Tooltip,
 } from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import InfoIcon from '@mui/icons-material/Info';
 import { useAuth } from '../contexts/AuthContext';
 import { QUOTA_LIMITS } from '../types/user';
+import { firebaseEnabled } from '../services/firebase';
 
 const AuthButton = () => {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
@@ -119,15 +122,26 @@ const AuthButton = () => {
           </Menu>
         </>
       ) : (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSignIn}
-          startIcon={<LoginIcon />}
-          sx={{ textTransform: 'none' }}
+        <Tooltip
+          title={
+            !firebaseEnabled
+              ? 'Firebase認証が設定されていません。FIREBASE_SETUP.mdを参照してください。'
+              : ''
+          }
         >
-          Googleでログイン
-        </Button>
+          <span>
+            <Button
+              variant="contained"
+              color={!firebaseEnabled ? 'warning' : 'primary'}
+              onClick={handleSignIn}
+              startIcon={!firebaseEnabled ? <InfoIcon /> : <LoginIcon />}
+              disabled={!firebaseEnabled}
+              sx={{ textTransform: 'none' }}
+            >
+              {!firebaseEnabled ? '認証未設定' : 'Googleでログイン'}
+            </Button>
+          </span>
+        </Tooltip>
       )}
     </Box>
   );

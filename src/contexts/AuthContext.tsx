@@ -6,7 +6,7 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
 } from 'firebase/auth';
-import { auth, googleProvider } from '../services/firebase';
+import { auth, googleProvider, firebaseEnabled } from '../services/firebase';
 import { AuthUser, UserType, OWNER_EMAIL } from '../types/user';
 import { setCurrentUserType } from '../utils/userSettings';
 
@@ -45,6 +45,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Googleログイン
   const signInWithGoogle = async () => {
+    if (!firebaseEnabled || !auth || !googleProvider) {
+      alert(
+        'Firebase認証が設定されていません。\n' +
+        'FIREBASE_SETUP.mdを参照して、Firebase設定を完了してください。'
+      );
+      throw new Error('Firebase not configured');
+    }
+
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
@@ -55,6 +63,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // ログアウト
   const signOut = async () => {
+    if (!firebaseEnabled || !auth) {
+      throw new Error('Firebase not configured');
+    }
+
     try {
       await firebaseSignOut(auth);
     } catch (error) {
@@ -70,6 +82,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // 認証状態の監視
   useEffect(() => {
+    // Firebaseが設定されていない場合はゲストユーザーとして扱う
+    if (!firebaseEnabled || !auth) {
+      setUser(null);
+      setCurrentUserType('guest');
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const userType = determineUserType(firebaseUser);
