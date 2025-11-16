@@ -6,7 +6,7 @@ import SearchHistory from './components/SearchHistory';
 import SearchStats from './components/SearchStats';
 import DomainAnalysis from './components/DomainAnalysis';
 import QuotaDisplay from './components/QuotaDisplay';
-import UserTypeSelector from './components/UserTypeSelector';
+import AuthButton from './components/AuthButton';
 import { Box, Container, Typography, ThemeProvider, CssBaseline, IconButton, CircularProgress } from '@mui/material';
 import { Analytics } from '@vercel/analytics/react';
 import SearchIcon from '@mui/icons-material/Search';
@@ -20,6 +20,7 @@ import {
   getRemainingQueries,
 } from './utils/apiQuotaManager';
 import { createCustomTheme } from './util/theme';
+import { AuthProvider } from './contexts/AuthContext';
 
 const App = () => {
   const [results, setResults] = useState<SearchResult[]>([]); // 検索結果を格納する状態
@@ -152,24 +153,26 @@ const App = () => {
   };
 
   return (
-    <ThemeProvider theme={currentTheme}>
-      <CssBaseline />
-      <Box sx={{ position: 'relative', minHeight: '100vh', pb: 8 }}>
-        {/* ダークモード切り替えボタン */}
-        <Box sx={{ position: 'fixed', top: 16, right: 16, zIndex: 1100 }}>
-          <IconButton
-            onClick={() => setDarkMode(!darkMode)}
-            color="primary"
-            sx={{
-              backgroundColor: 'background.paper',
-              boxShadow: 3,
-              '&:hover': { backgroundColor: 'action.hover' },
-            }}
-            aria-label="ダークモード切り替え"
-          >
-            {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-          </IconButton>
-        </Box>
+    <AuthProvider>
+      <ThemeProvider theme={currentTheme}>
+        <CssBaseline />
+        <Box sx={{ position: 'relative', minHeight: '100vh', pb: 8 }}>
+          {/* 右上のボタンエリア */}
+          <Box sx={{ position: 'fixed', top: 16, right: 16, zIndex: 1100, display: 'flex', gap: 2 }}>
+            <IconButton
+              onClick={() => setDarkMode(!darkMode)}
+              color="primary"
+              sx={{
+                backgroundColor: 'background.paper',
+                boxShadow: 3,
+                '&:hover': { backgroundColor: 'action.hover' },
+              }}
+              aria-label="ダークモード切り替え"
+            >
+              {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+            <AuthButton />
+          </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mt: '2vw', mb: 2 }}>
           <SearchIcon sx={{ fontSize: { md: '2.5rem', xs: '1.75rem' }, color: 'primary.main' }} />
@@ -205,9 +208,6 @@ const App = () => {
         </Typography>
 
         <Container maxWidth="xl">
-          {/* ユーザータイプ選択 */}
-          <UserTypeSelector onUserTypeChange={() => setStats(getSearchStats())} />
-
           {/* APIクォータ表示 */}
           <QuotaDisplay onQuotaUpdate={() => setStats(getSearchStats())} />
 
@@ -277,6 +277,7 @@ const App = () => {
         <Analytics />
       </Box>
     </ThemeProvider>
+    </AuthProvider>
   );
 };
 
