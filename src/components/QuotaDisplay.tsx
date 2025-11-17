@@ -1,6 +1,11 @@
 // src/components/QuotaDisplay.tsx
 import { useState, useEffect } from 'react';
-import { Box, Typography, LinearProgress, Paper, Chip, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import LinearProgress from '@mui/material/LinearProgress';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import WarningIcon from '@mui/icons-material/Warning';

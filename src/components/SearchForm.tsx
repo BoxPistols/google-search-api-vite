@@ -1,7 +1,12 @@
 // src/components/SearchForm.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo, useCallback } from 'react';
 import type { FormEvent } from 'react';
-import { TextField, Button, Box, Typography, Chip, Alert } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import Alert from '@mui/material/Alert';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import { getRemainingQueries } from '../utils/apiQuotaManager';
 
@@ -10,7 +15,7 @@ type SearchFormProps = {
 };
 // https://ja.vitejs.dev/guide/env-and-mode.html
 
-const SearchForm = ({ onSearch }: SearchFormProps) => {
+const SearchForm = memo(({ onSearch }: SearchFormProps) => {
   const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
   const cx = import.meta.env.VITE_GOOGLE_SEARCH_ID;
 
@@ -32,7 +37,7 @@ const SearchForm = ({ onSearch }: SearchFormProps) => {
   const canSearch = estimatedQueries > 0 && remainingQueries >= estimatedQueries;
   const isLowQuota = remainingQueries < estimatedQueries * 2;
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!canSearch) {
@@ -50,7 +55,7 @@ const SearchForm = ({ onSearch }: SearchFormProps) => {
     } else {
       console.error('API KeyまたはSearch IDが設定されていません');
     }
-  };
+  }, [canSearch, estimatedQueries, remainingQueries, apiKey, cx, query, onSearch]);
 
   return (
     <Box sx={{ width: '90%', margin: '0 auto' }}>
@@ -139,6 +144,8 @@ const SearchForm = ({ onSearch }: SearchFormProps) => {
       </form>
     </Box>
   );
-};
+});
+
+SearchForm.displayName = 'SearchForm';
 
 export default SearchForm;

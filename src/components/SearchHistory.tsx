@@ -1,17 +1,15 @@
 // src/components/SearchHistory.tsx
-import { useState, useEffect } from 'react';
-import {
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  IconButton,
-  Collapse,
-  Chip,
-  Paper,
-} from '@mui/material';
+import { useState, useEffect, memo, useCallback } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import IconButton from '@mui/material/IconButton';
+import Collapse from '@mui/material/Collapse';
+import Chip from '@mui/material/Chip';
+import Paper from '@mui/material/Paper';
 import HistoryIcon from '@mui/icons-material/History';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -23,7 +21,7 @@ interface SearchHistoryProps {
   onSelectHistory: (history: SearchHistoryType) => void;
 }
 
-const SearchHistory = ({ onSelectHistory }: SearchHistoryProps) => {
+const SearchHistory = memo(({ onSelectHistory }: SearchHistoryProps) => {
   const [history, setHistory] = useState<SearchHistoryType[]>([]);
   const [expanded, setExpanded] = useState(false);
 
@@ -31,19 +29,19 @@ const SearchHistory = ({ onSelectHistory }: SearchHistoryProps) => {
     loadHistory();
   }, []);
 
-  const loadHistory = () => {
+  const loadHistory = useCallback(() => {
     const data = getSearchHistory();
     setHistory(data);
-  };
+  }, []);
 
-  const handleClearHistory = () => {
+  const handleClearHistory = useCallback(() => {
     if (window.confirm('検索履歴を全て削除しますか？')) {
       clearSearchHistory();
       setHistory([]);
     }
-  };
+  }, []);
 
-  const formatDate = (timestamp: number) => {
+  const formatDate = useCallback((timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleString('ja-JP', {
       year: 'numeric',
@@ -52,7 +50,7 @@ const SearchHistory = ({ onSelectHistory }: SearchHistoryProps) => {
       hour: '2-digit',
       minute: '2-digit',
     });
-  };
+  }, []);
 
   if (history.length === 0) {
     return null;
@@ -139,6 +137,8 @@ const SearchHistory = ({ onSelectHistory }: SearchHistoryProps) => {
       </Collapse>
     </Paper>
   );
-};
+});
+
+SearchHistory.displayName = 'SearchHistory';
 
 export default SearchHistory;

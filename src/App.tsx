@@ -1,13 +1,21 @@
 // src/App.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import SearchForm from './components/SearchForm';
-import ResultsTable from './components/ResultsTable';
-import SearchHistory from './components/SearchHistory';
-import SearchStats from './components/SearchStats';
-import DomainAnalysis from './components/DomainAnalysis';
 import QuotaDisplay from './components/QuotaDisplay';
 import AuthButton from './components/AuthButton';
-import { Box, Container, Typography, ThemeProvider, CssBaseline, IconButton, CircularProgress } from '@mui/material';
+
+// Lazy load heavy components
+const ResultsTable = lazy(() => import('./components/ResultsTable'));
+const SearchHistory = lazy(() => import('./components/SearchHistory'));
+const SearchStats = lazy(() => import('./components/SearchStats'));
+const DomainAnalysis = lazy(() => import('./components/DomainAnalysis'));
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import ThemeProvider from '@mui/material/styles/ThemeProvider';
+import CssBaseline from '@mui/material/CssBaseline';
+import IconButton from '@mui/material/IconButton';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Analytics } from '@vercel/analytics/react';
 import SearchIcon from '@mui/icons-material/Search';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -213,15 +221,19 @@ const App = () => {
 
           {/* 統計情報 */}
           {stats.totalSearches > 0 && (
-            <SearchStats
-              totalSearches={stats.totalSearches}
-              totalQueries={stats.totalQueries}
-              lastSearch={stats.lastSearch}
-            />
+            <Suspense fallback={<CircularProgress />}>
+              <SearchStats
+                totalSearches={stats.totalSearches}
+                totalQueries={stats.totalQueries}
+                lastSearch={stats.lastSearch}
+              />
+            </Suspense>
           )}
 
           {/* 検索履歴 */}
-          <SearchHistory onSelectHistory={handleSelectHistory} />
+          <Suspense fallback={<CircularProgress />}>
+            <SearchHistory onSelectHistory={handleSelectHistory} />
+          </Suspense>
 
           {/* メイン検索フォーム */}
           <Box
@@ -260,7 +272,11 @@ const App = () => {
           </Box>
 
           {/* ドメイン分析 */}
-          {results.length > 0 && <DomainAnalysis results={results} />}
+          {results.length > 0 && (
+            <Suspense fallback={<CircularProgress />}>
+              <DomainAnalysis results={results} />
+            </Suspense>
+          )}
 
           {/* 検索結果 */}
           {loading ? (
@@ -271,7 +287,9 @@ const App = () => {
               </Typography>
             </Box>
           ) : (
-            <ResultsTable results={results} searchKeyword={searchKeyword} />
+            <Suspense fallback={<CircularProgress />}>
+              <ResultsTable results={results} searchKeyword={searchKeyword} />
+            </Suspense>
           )}
         </Container>
         <Analytics />

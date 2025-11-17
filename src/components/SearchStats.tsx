@@ -1,5 +1,9 @@
 // src/components/SearchStats.tsx
-import { Box, Typography, Paper, Grid } from '@mui/material';
+import { memo } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
 import SearchIcon from '@mui/icons-material/Search';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -50,7 +54,7 @@ const StatCard = ({
   </Paper>
 );
 
-const SearchStats = ({ totalSearches, totalQueries, lastSearch }: SearchStatsProps) => {
+const SearchStats = memo(({ totalSearches, totalQueries, lastSearch }: SearchStatsProps) => {
   return (
     <Box sx={{ mb: 3 }}>
       <Grid container spacing={2}>
@@ -81,6 +85,8 @@ const SearchStats = ({ totalSearches, totalQueries, lastSearch }: SearchStatsPro
       </Grid>
     </Box>
   );
-};
+});
+
+SearchStats.displayName = 'SearchStats';
 
 export default SearchStats;
