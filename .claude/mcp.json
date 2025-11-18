@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "google-search-ranking": {
+      "command": "node",
+      "args": ["./mcp-server/index.js"],
+      "description": "Google Search Ranking Checker MCP Server",
+      "env": {
+        "GOOGLE_API_KEY": "${VITE_GOOGLE_API_KEY}",
+        "GOOGLE_SEARCH_ID": "${VITE_GOOGLE_SEARCH_ID}"
+      }
+    },
+    "firestore": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-firestore"
+      ],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${GOOGLE_APPLICATION_CREDENTIALS}",
+        "FIRESTORE_PROJECT_ID": "${VITE_FIREBASE_PROJECT_ID}"
+      },
+      "description": "Firestore MCP Server for quota management"
+    }
+  }
+}
