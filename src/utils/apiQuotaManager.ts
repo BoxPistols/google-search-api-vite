@@ -1,8 +1,9 @@
 // src/utils/apiQuotaManager.ts
 // Google Custom Search API のクエリ使用量を管理するユーティリティ
 
+import { getDailyQuotaLimit } from './userSettings';
+
 const STORAGE_KEY = 'google_api_quota';
-const DAILY_LIMIT = 100; // Google Custom Search APIの無料枠は1日100クエリ
 
 export interface QuotaData {
   date: string; // YYYY-MM-DD形式
@@ -91,13 +92,15 @@ export const recordQueryUsage = (query: string, queriesConsumed: number): QuotaD
 // 残りのクエリ数を取得
 export const getRemainingQueries = (): number => {
   const data = getQuotaData();
-  return Math.max(0, DAILY_LIMIT - data.queriesUsed);
+  const limit = getDailyQuotaLimit();
+  return Math.max(0, limit - data.queriesUsed);
 };
 
 // クエリ使用率を取得（0-100%）
 export const getQuotaUsagePercentage = (): number => {
   const data = getQuotaData();
-  return Math.min(100, (data.queriesUsed / DAILY_LIMIT) * 100);
+  const limit = getDailyQuotaLimit();
+  return Math.min(100, (data.queriesUsed / limit) * 100);
 };
 
 // リセットまでの時間を取得（ミリ秒）
@@ -124,5 +127,7 @@ export const canExecuteQuery = (queriesNeeded: number = 1): boolean => {
   return getRemainingQueries() >= queriesNeeded;
 };
 
-// 日次制限
-export const QUOTA_LIMIT = DAILY_LIMIT;
+// 現在のユーザーの日次制限を取得
+export const getQuotaLimit = (): number => {
+  return getDailyQuotaLimit();
+};

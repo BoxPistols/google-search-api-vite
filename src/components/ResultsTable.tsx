@@ -1,22 +1,26 @@
-import { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Paper,
-  TableContainer,
-  Button,
-  Box,
-  IconButton,
-  Tooltip,
-  Avatar,
-  ButtonGroup,
-} from '@mui/material';
+import { useState, lazy, Suspense } from 'react';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import TableContainer from '@mui/material/TableContainer';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Avatar from '@mui/material/Avatar';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import CircularProgress from '@mui/material/CircularProgress';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import DescriptionIcon from '@mui/icons-material/Description';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import type { SearchResult } from '../types/search';
-import ResultDetail from './ResultDetail';
 import theme from '../util/theme';
+
+// Lazy load the detail dialog
+const ResultDetail = lazy(() => import('./ResultDetail'));
 
 type ResultsTableProps = {
   results: SearchResult[];
@@ -73,7 +77,9 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
         result.link,
         result.snippet,
         result.displayLink || result.link,
-      ].map(field => escapeCSVField(field)).join(',');
+      ]
+        .map(field => escapeCSVField(field))
+        .join(',');
     });
 
     // Windows互換性のため改行コードを\r\nに統一
@@ -199,12 +205,8 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
               <StyledCell>{result.snippet}</StyledCell>
               <TableCell sx={{ textAlign: 'center' }}>
                 <Tooltip title="詳細を表示">
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={() => handleShowDetail(result)}
-                  >
-                    <span>📋</span>
+                  <IconButton size="small" color="primary" onClick={() => handleShowDetail(result)}>
+                    <ContentPasteIcon />
                   </IconButton>
                 </Tooltip>
               </TableCell>
@@ -224,16 +226,22 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
           }}
         >
           <ButtonGroup variant="contained" size="large">
-            <Button onClick={handleDownloadCSV} color="success">
-              📄 CSV
+            <Button onClick={handleDownloadCSV} color="success" startIcon={<DescriptionIcon />}>
+              CSV
             </Button>
-            <Button onClick={handleDownloadJSON} color="info">
-              📦 JSON
+            <Button onClick={handleDownloadJSON} color="info" startIcon={<InventoryIcon />}>
+              JSON
             </Button>
           </ButtonGroup>
         </Box>
       )}
-      <ResultDetail result={selectedResult} open={detailOpen} onClose={() => setDetailOpen(false)} />
+      <Suspense fallback={<CircularProgress />}>
+        <ResultDetail
+          result={selectedResult}
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
+        />
+      </Suspense>
     </TableContainer>
   );
 };

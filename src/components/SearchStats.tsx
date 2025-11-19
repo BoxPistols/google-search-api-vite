@@ -1,6 +1,12 @@
 // src/components/SearchStats.tsx
-import { Box, Typography, Paper, Grid } from '@mui/material';
-import theme from '../util/theme';
+import { memo } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import SearchIcon from '@mui/icons-material/Search';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 interface SearchStatsProps {
   totalSearches: number;
@@ -9,12 +15,12 @@ interface SearchStatsProps {
 }
 
 const StatCard = ({
-  emoji,
+  icon,
   label,
   value,
   color,
 }: {
-  emoji: string;
+  icon: React.ReactNode;
   label: string;
   value: string | number;
   color: string;
@@ -34,49 +40,51 @@ const StatCard = ({
       },
     }}
   >
-    <Typography sx={{ fontSize: '2rem' }}>{emoji}</Typography>
+    <Box sx={{ fontSize: '2rem', display: 'flex', alignItems: 'center', color }}>{icon}</Box>
     <Box sx={{ flexGrow: 1 }}>
       <Typography variant="caption" color="text.secondary">
         {label}
       </Typography>
-      <Typography variant="h6" fontWeight="bold" color={color}>
+      <Typography variant="h6" fontWeight="bold" sx={{ color }}>
         {value}
       </Typography>
     </Box>
   </Paper>
 );
 
-const SearchStats = ({ totalSearches, totalQueries, lastSearch }: SearchStatsProps) => {
+const SearchStats = memo(({ totalSearches, totalQueries, lastSearch }: SearchStatsProps) => {
   return (
     <Box sx={{ mb: 3 }}>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={4}>
           <StatCard
-            emoji="🔍"
+            icon={<SearchIcon sx={{ fontSize: '2rem' }} />}
             label="総検索回数"
             value={totalSearches}
-            color={theme.palette.primary.main}
+            color="#1d6dd5"
           />
         </Grid>
         <Grid item xs={12} sm={4}>
           <StatCard
-            emoji="📊"
+            icon={<BarChartIcon sx={{ fontSize: '2rem' }} />}
             label="総クエリ消費数"
             value={totalQueries}
-            color={theme.palette.secondary.main}
+            color="#736482"
           />
         </Grid>
         <Grid item xs={12} sm={4}>
           <StatCard
-            emoji="📅"
+            icon={<CalendarTodayIcon sx={{ fontSize: '2rem' }} />}
             label="最新の検索"
             value={lastSearch || '-'}
-            color={theme.palette.success.main}
+            color="#67b411"
           />
         </Grid>
       </Grid>
     </Box>
   );
-};
+});
+
+SearchStats.displayName = 'SearchStats';
 
 export default SearchStats;

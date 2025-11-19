@@ -1,5 +1,10 @@
 // src/components/DomainAnalysis.tsx
-import { Box, Typography, Paper, Chip } from '@mui/material';
+import { memo, useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
+import LanguageIcon from '@mui/icons-material/Language';
 import type { SearchResult } from '../types/search';
 import theme from '../util/theme';
 
@@ -7,20 +12,27 @@ interface DomainAnalysisProps {
   results: SearchResult[];
 }
 
-const DomainAnalysis = ({ results }: DomainAnalysisProps) => {
-  if (results.length === 0) return null;
+const DomainAnalysis = memo(({ results }: DomainAnalysisProps) => {
+  // ドメインごとの出現回数を集計 - useMemoで最適化
+  const sortedDomains = useMemo(() => {
+    if (results.length === 0) return [];
 
-  // ドメインごとの出現回数を集計
-  const domainCounts = results.reduce((acc, result) => {
-    const domain = result.displayLink || new URL(result.link).hostname;
-    acc[domain] = (acc[domain] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+    const domainCounts = results.reduce(
+      (acc, result) => {
+        const domain = result.displayLink || new URL(result.link).hostname;
+        acc[domain] = (acc[domain] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
-  // 出現回数でソート
-  const sortedDomains = Object.entries(domainCounts)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10);
+    // 出現回数でソート
+    return Object.entries(domainCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10);
+  }, [results]);
+
+  if (sortedDomains.length === 0) return null;
 
   return (
     <Paper
@@ -33,8 +45,9 @@ const DomainAnalysis = ({ results }: DomainAnalysisProps) => {
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <LanguageIcon color="primary" />
         <Typography variant="h6" color="primary">
-          🌐 ドメイン分析
+          ドメイン分析
         </Typography>
       </Box>
 
@@ -60,6 +73,8 @@ const DomainAnalysis = ({ results }: DomainAnalysisProps) => {
       </Box>
     </Paper>
   );
-};
+});
+
+DomainAnalysis.displayName = 'DomainAnalysis';
 
 export default DomainAnalysis;
