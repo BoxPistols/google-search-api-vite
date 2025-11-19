@@ -13,9 +13,13 @@ import Tooltip from '@mui/material/Tooltip';
 import Avatar from '@mui/material/Avatar';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DescriptionIcon from '@mui/icons-material/Description';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import WorkIcon from '@mui/icons-material/Work';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import BusinessIcon from '@mui/icons-material/Business';
 import type { SearchResult } from '../types/search';
 import theme from '../util/theme';
 
@@ -114,6 +118,8 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
         snippet: result.snippet,
         displayLink: result.displayLink,
         formattedUrl: result.formattedUrl,
+        isJobPosting: result.isJobPosting,
+        jobInfo: result.jobInfo,
         metadata: result.pagemap?.metatags?.[0],
         thumbnail: result.pagemap?.cse_thumbnail?.[0],
       })),
@@ -190,7 +196,47 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
                 )}
               </TableCell>
               <StyledCell>
-                <strong>{result.title}</strong>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <strong>{result.title}</strong>
+
+                  {/* 求人情報バッジ */}
+                  {result.isJobPosting && (
+                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                      <Chip
+                        icon={<WorkIcon />}
+                        label="求人"
+                        color="primary"
+                        size="small"
+                        variant="filled"
+                      />
+                      {result.jobInfo?.hasStructuredData && (
+                        <Chip
+                          icon={<CheckCircleIcon />}
+                          label="構造化データ"
+                          color="success"
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {result.jobInfo?.isDirectHiring && (
+                        <Chip
+                          icon={<BusinessIcon />}
+                          label="直接採用"
+                          color="info"
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {result.jobInfo?.companyName && (
+                        <Chip
+                          label={result.jobInfo.companyName}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  )}
+                </Box>
               </StyledCell>
               <StyledCell>
                 <a

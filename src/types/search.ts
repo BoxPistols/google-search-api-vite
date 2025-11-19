@@ -27,6 +27,16 @@ export interface SearchResult {
       viewport?: string;
     }>;
   };
+  // 求人情報の検知フラグ
+  isJobPosting?: boolean;
+  jobInfo?: {
+    hasStructuredData: boolean;
+    isDirectHiring: boolean;
+    companyName?: string;
+    jobTitle?: string;
+    location?: string;
+    salary?: string;
+  };
 }
 
 export interface SearchHistory {

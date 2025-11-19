@@ -1,6 +1,6 @@
 // src/App.tsx
 import { useState, useEffect, lazy, Suspense, useRef } from 'react';
-import SearchForm from './components/SearchForm';
+import SearchForm, { type SearchMode } from './components/SearchForm';
 import QuotaDisplay from './components/QuotaDisplay';
 import AuthButton from './components/AuthButton';
 import { ToastProvider, toast } from './components/ui/Toast';
@@ -8,6 +8,7 @@ import { TableSkeleton, StatsSkeleton } from './components/ui/SkeletonLoader';
 import { AnimatedBox } from './components/animated/AnimatedBox';
 import { useKeyboardShortcuts, createShortcuts } from './hooks/useKeyboardShortcuts';
 import { exportToPDF, exportToExcel } from './utils/advancedExport';
+import { filterJobSearchResults, sortJobSearchResults } from './utils/jobSearchFilter';
 
 // Lazy load heavy components
 const ResultsTable = lazy(() => import('./components/ResultsTable'));
@@ -39,6 +40,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import WorkIcon from '@mui/icons-material/Work';
 import type { SearchResult, SearchHistory as SearchHistoryType } from './types/search';
 import { saveSearchToHistory, getSearchStats } from './utils/localStorage';
 import { recordQueryUsage, canExecuteQuery, getRemainingQueries } from './utils/apiQuotaManager';
@@ -50,6 +52,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [queriesUsed, setQueriesUsed] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [currentSearchMode, setCurrentSearchMode] = useState<SearchMode>('normal');
   const [stats, setStats] = useState(getSearchStats());
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
@@ -107,7 +110,7 @@ const App = () => {
     setExportMenuAnchor(null);
   };
 
-  const handleSearch = async (apiKey: string, cx: string, query: string) => {
+  const handleSearch = async (apiKey: string, cx: string, query: string, mode: SearchMode) => {
     const keywordCount = query.trim().split(/\s+/).length;
     const newQueries = 2 * keywordCount;
 
@@ -120,6 +123,7 @@ const App = () => {
     setLoading(true);
     setResults([]);
     setSearchKeyword(query);
+    setCurrentSearchMode(mode);
     toast.loading('検索中...');
 
     try {
@@ -131,7 +135,24 @@ const App = () => {
       console.log('secondPageResponse:', secondPageResponse);
       const secondPageResults = secondPageResponse.items || [];
 
-      const allResults: SearchResult[] = [...firstPageResults, ...secondPageResults];
+      let allResults: SearchResult[] = [...firstPageResults, ...secondPageResults];
+
+      // 求人検索モードの場合、フィルタリングとソート
+      if (mode === 'job') {
+        console.log('求人検索モード: フィルタリング開始');
+        const beforeCount = allResults.length;
+        allResults = filterJobSearchResults(allResults);
+        allResults = sortJobSearchResults(allResults);
+        const afterCount = allResults.length;
+        console.log(`求人検索モード: ${beforeCount}件 → ${afterCount}件に絞り込み`);
+
+        if (afterCount === 0) {
+          toast.dismiss();
+          toast.error('求人情報が見つかりませんでした。検索キーワードを変更してください。', {
+            duration: 4000,
+          });
+        }
+      }
 
       setResults(allResults);
 
@@ -150,7 +171,11 @@ const App = () => {
       setStats(getSearchStats());
 
       toast.dismiss();
-      toast.success(`${allResults.length}件の検索結果を取得しました`);
+      if (mode === 'job') {
+        toast.success(`${allResults.length}件の求人情報を取得しました`);
+      } else {
+        toast.success(`${allResults.length}件の検索結果を取得しました`);
+      }
     } catch (error) {
       console.error('検索エラー:', error);
       toast.dismiss();
@@ -331,6 +356,26 @@ const App = () => {
             {/* ドメイン分析 */}
             {results.length > 0 && (
               <AnimatedBox variant="slideUp" delay={0.3}>
+                {/* 検索モード表示 */}
+                {currentSearchMode === 'job' && (
+                  <Box
+                    sx={{
+                      mb: 2,
+                      p: 2,
+                      backgroundColor: 'primary.main',
+                      color: 'primary.contrastText',
+                      borderRadius: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
+                    <WorkIcon />
+                    <Typography variant="body1" fontWeight="bold">
+                      求人検索モードで検索しました - 企業の直接採用ページのみを表示
+                    </Typography>
+                  </Box>
+                )}
                 <Suspense fallback={null}>
                   <DomainAnalysis results={results} />
                 </Suspense>

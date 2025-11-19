@@ -7,11 +7,17 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import WorkIcon from '@mui/icons-material/Work';
+import SearchIcon from '@mui/icons-material/Search';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import { getRemainingQueries } from '../utils/apiQuotaManager';
 
+export type SearchMode = 'normal' | 'job';
+
 type SearchFormProps = {
-  onSearch: (apiKey: string, cx: string, query: string) => void;
+  onSearch: (apiKey: string, cx: string, query: string, mode: SearchMode) => void;
 };
 // https://ja.vitejs.dev/guide/env-and-mode.html
 
@@ -25,6 +31,7 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
   console.log('Search ID length:', typeof cx === 'string' ? cx.length : 'undefined');
 
   const [query, setQuery] = useState('');
+  const [searchMode, setSearchMode] = useState<SearchMode>('normal');
 
   // クエリ消費量を計算（2ページ分 × キーワード数）
   const estimatedQueries = useMemo(() => {
@@ -52,17 +59,70 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
 
       // apiKeyとcxが文字列であることを確認してから渡す
       if (typeof apiKey === 'string' && typeof cx === 'string') {
-        onSearch(apiKey, cx, query);
+        onSearch(apiKey, cx, query, searchMode);
       } else {
         console.error('API KeyまたはSearch IDが設定されていません');
       }
     },
-    [canSearch, estimatedQueries, remainingQueries, apiKey, cx, query, onSearch]
+    [canSearch, estimatedQueries, remainingQueries, apiKey, cx, query, searchMode, onSearch]
   );
 
   return (
     <Box sx={{ width: '90%', margin: '0 auto' }}>
       <form onSubmit={handleSubmit} aria-required="true">
+        {/* 検索モード切り替え */}
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <ToggleButtonGroup
+            value={searchMode}
+            exclusive
+            onChange={(_, newMode) => newMode && setSearchMode(newMode)}
+            aria-label="検索モード"
+            sx={{
+              backgroundColor: 'background.paper',
+              '& .MuiToggleButton-root': {
+                py: 1,
+                px: 3,
+                border: '2px solid',
+                borderColor: 'divider',
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                },
+              },
+            }}
+          >
+            <ToggleButton value="normal" aria-label="通常検索">
+              <SearchIcon sx={{ mr: 1 }} />
+              通常検索
+            </ToggleButton>
+            <ToggleButton value="job" aria-label="求人検索">
+              <WorkIcon sx={{ mr: 1 }} />
+              求人検索モード
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        {/* 求人検索モードの説明 */}
+        {searchMode === 'job' && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2" fontWeight="bold" gutterBottom>
+              求人検索モード
+            </Typography>
+            <Typography variant="caption" component="div">
+              • 企業の直接採用ページのみを表示
+              <br />
+              • Indeed、リクナビ、マイナビなどの求人サイトを除外
+              <br />
+              • ブログやまとめ記事を除外
+              <br />• JSON-LD構造化データで求人情報を検出
+            </Typography>
+          </Alert>
+        )}
+
         <Box
           sx={{
             display: 'grid',
