@@ -75,37 +75,37 @@ const getDesignTokens = (mode: PaletteMode) => ({
       : {
           // ダークモード - Material Design 3準拠のカラー
           primary: {
-            main: '#90caf9',    // 明るい青（ダークモード用）
+            main: '#90caf9', // 明るい青（ダークモード用）
             dark: '#5d99c6',
             light: '#bbdefb',
             lighter: '#1e3a5f',
           },
           secondary: {
-            main: '#ce93d8',    // 明るい紫（ダークモード用）
+            main: '#ce93d8', // 明るい紫（ダークモード用）
             dark: '#ab47bc',
             light: '#e1bee7',
             lighter: '#4a148c',
           },
           success: {
-            main: '#66bb6a',    // 明るい緑（ダークモード用）
+            main: '#66bb6a', // 明るい緑（ダークモード用）
             dark: '#43a047',
             light: '#81c784',
             lighter: '#1b5e20',
           },
           error: {
-            main: '#f44336',    // 明るい赤（ダークモード用）
+            main: '#f44336', // 明るい赤（ダークモード用）
             dark: '#d32f2f',
             light: '#e57373',
             lighter: '#b71c1c',
           },
           warning: {
-            main: '#ffa726',    // 明るいオレンジ（ダークモード用）
+            main: '#ffa726', // 明るいオレンジ（ダークモード用）
             dark: '#f57c00',
             light: '#ffb74d',
             lighter: '#e65100',
           },
           info: {
-            main: '#29b6f6',    // 明るい水色（ダークモード用）
+            main: '#29b6f6', // 明るい水色（ダークモード用）
             dark: '#0288d1',
             light: '#4fc3f7',
             lighter: '#01579b',
@@ -116,8 +116,8 @@ const getDesignTokens = (mode: PaletteMode) => ({
             disabled: 'rgba(255, 255, 255, 0.38)',
           },
           background: {
-            default: '#121212',  // Material Design推奨の暗い背景
-            paper: '#1e1e1e',    // わずかに明るいサーフェス
+            default: '#121212', // Material Design推奨の暗い背景
+            paper: '#1e1e1e', // わずかに明るいサーフェス
           },
           divider: 'rgba(255, 255, 255, 0.12)',
         }),
@@ -224,12 +224,9 @@ export const createCustomTheme = (mode: PaletteMode = 'light') => {
               color: mode === 'light' ? '#fff' : 'rgba(0, 0, 0, 0.87)',
               // disabledの時のスタイル
               '&.Mui-disabled': {
-                backgroundColor: mode === 'light'
-                  ? 'rgba(0, 0, 0, 0.12)'
-                  : 'rgba(255, 255, 255, 0.12)',
-                color: mode === 'light'
-                  ? 'rgba(0, 0, 0, 0.26)'
-                  : 'rgba(255, 255, 255, 0.30)',
+                backgroundColor:
+                  mode === 'light' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.12)',
+                color: mode === 'light' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(255, 255, 255, 0.30)',
               },
             },
           },

@@ -34,9 +34,7 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock IntersectionObserver
-globalThis.IntersectionObserver = class IntersectionObserver
-  implements IntersectionObserver
-{
+globalThis.IntersectionObserver = class IntersectionObserver implements IntersectionObserver {
   readonly root = null;
   readonly rootMargin = '';
   readonly thresholds = [];

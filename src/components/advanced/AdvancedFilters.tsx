@@ -34,7 +34,10 @@ export const AdvancedFilters = memo(
   ({ filters, onFiltersChange, domains }: AdvancedFiltersProps) => {
     const [expanded, setExpanded] = useState(false);
 
-    const handleFilterChange = (key: keyof FilterOptions, value: FilterOptions[keyof FilterOptions]) => {
+    const handleFilterChange = (
+      key: keyof FilterOptions,
+      value: FilterOptions[keyof FilterOptions]
+    ) => {
       onFiltersChange({ ...filters, [key]: value });
     };
 
