@@ -22,68 +22,104 @@ declare module '@mui/material/styles' {
 const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
     mode,
-    primary: {
-      main: '#1d6dd5',
-      dark: '#1b4071',
-      light: '#5b91d7',
-      lighter: '#ccdcf2',
-    },
-    secondary: {
-      main: '#736482',
-      dark: '#403947',
-      light: '#93889e',
-      lighter: '#d9d5dd',
-    },
-    success: {
-      main: '#67b411',
-      dark: '#314f10',
-      light: '#87d530',
-      lighter: '#caeda4',
-    },
-    error: {
-      main: '#dd4b35',
-      dark: '#873225',
-      light: '#da8578',
-      lighter: '#f8e8e6',
-    },
-    warning: {
-      main: '#f5a623',
-      dark: '#9a6918',
-      light: '#e9bb6f',
-      lighter: '#fbf4e9',
-    },
-    info: {
-      main: '#0dcce2',
-      dark: '#146b75',
-      light: '#4dd2e1',
-      lighter: '#c6f0f5',
-    },
     ...(mode === 'light'
       ? {
-          // ライトモード
+          // ライトモード - Material Designの標準カラー
+          primary: {
+            main: '#1976d2',
+            dark: '#115293',
+            light: '#42a5f5',
+            lighter: '#e3f2fd',
+          },
+          secondary: {
+            main: '#9c27b0',
+            dark: '#6a1b9a',
+            light: '#ba68c8',
+            lighter: '#f3e5f5',
+          },
+          success: {
+            main: '#2e7d32',
+            dark: '#1b5e20',
+            light: '#4caf50',
+            lighter: '#e8f5e9',
+          },
+          error: {
+            main: '#d32f2f',
+            dark: '#c62828',
+            light: '#ef5350',
+            lighter: '#ffebee',
+          },
+          warning: {
+            main: '#ed6c02',
+            dark: '#e65100',
+            light: '#ff9800',
+            lighter: '#fff3e0',
+          },
+          info: {
+            main: '#0288d1',
+            dark: '#01579b',
+            light: '#03a9f4',
+            lighter: '#e1f5fe',
+          },
           text: {
-            primary: '#333',
-            secondary: '#666',
-            disabled: '#ccc',
+            primary: 'rgba(0, 0, 0, 0.87)',
+            secondary: 'rgba(0, 0, 0, 0.60)',
+            disabled: 'rgba(0, 0, 0, 0.38)',
           },
           background: {
-            default: '#fff',
-            paper: '#fff',
+            default: '#fafafa',
+            paper: '#ffffff',
           },
-          divider: '#ccc',
+          divider: 'rgba(0, 0, 0, 0.12)',
         }
       : {
-          // ダークモード
+          // ダークモード - Material Design 3準拠のカラー
+          primary: {
+            main: '#90caf9',    // 明るい青（ダークモード用）
+            dark: '#5d99c6',
+            light: '#bbdefb',
+            lighter: '#1e3a5f',
+          },
+          secondary: {
+            main: '#ce93d8',    // 明るい紫（ダークモード用）
+            dark: '#ab47bc',
+            light: '#e1bee7',
+            lighter: '#4a148c',
+          },
+          success: {
+            main: '#66bb6a',    // 明るい緑（ダークモード用）
+            dark: '#43a047',
+            light: '#81c784',
+            lighter: '#1b5e20',
+          },
+          error: {
+            main: '#f44336',    // 明るい赤（ダークモード用）
+            dark: '#d32f2f',
+            light: '#e57373',
+            lighter: '#b71c1c',
+          },
+          warning: {
+            main: '#ffa726',    // 明るいオレンジ（ダークモード用）
+            dark: '#f57c00',
+            light: '#ffb74d',
+            lighter: '#e65100',
+          },
+          info: {
+            main: '#29b6f6',    // 明るい水色（ダークモード用）
+            dark: '#0288d1',
+            light: '#4fc3f7',
+            lighter: '#01579b',
+          },
           text: {
-            primary: '#e0e0e0',
-            secondary: '#b0b0b0',
-            disabled: '#666',
+            primary: 'rgba(255, 255, 255, 0.87)',
+            secondary: 'rgba(255, 255, 255, 0.60)',
+            disabled: 'rgba(255, 255, 255, 0.38)',
           },
           background: {
-            default: '#121212',
-            paper: '#1e1e1e',
+            default: '#121212',  // Material Design推奨の暗い背景
+            paper: '#1e1e1e',    // わずかに明るいサーフェス
           },
-          divider: '#444',
+          divider: 'rgba(255, 255, 255, 0.12)',
         }),
   },
 });
@@ -184,19 +220,53 @@ export const createCustomTheme = (mode: PaletteMode = 'light') => {
           contained: {
             // 背景がcontainedの時のスタイル
             '&.MuiButton-contained.MuiButton-root': {
-              // textContrast カラーの設定
-              color: '#fff',
+              // モードに応じたテキストカラー設定
+              color: mode === 'light' ? '#fff' : 'rgba(0, 0, 0, 0.87)',
               // disabledの時のスタイル
               '&.Mui-disabled': {
-                backgroundColor: '#ccc',
-                color: '#666',
+                backgroundColor: mode === 'light'
+                  ? 'rgba(0, 0, 0, 0.12)'
+                  : 'rgba(255, 255, 255, 0.12)',
+                color: mode === 'light'
+                  ? 'rgba(0, 0, 0, 0.26)'
+                  : 'rgba(255, 255, 255, 0.30)',
               },
             },
           },
         },
       },
-      // MuiTypography: { styleOverrides: { root: {},}, },
-      // MuiCssBaseline: { styleOverrides: { body: {}, }, },
+      // Paper コンポーネントのエレベーション調整
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundImage: mode === 'dark' ? 'none' : undefined,
+            ...(mode === 'dark' && {
+              backgroundColor: '#1e1e1e',
+            }),
+          },
+        },
+      },
+      // カードコンポーネントの調整
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            ...(mode === 'dark' && {
+              backgroundColor: '#1e1e1e',
+              backgroundImage: 'none',
+            }),
+          },
+        },
+      },
+      // CssBaselineでグローバルスタイルを設定
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            ...(mode === 'dark' && {
+              backgroundColor: '#121212',
+            }),
+          },
+        },
+      },
     },
     // 現在1=8px の設定
     spacing: 8,
