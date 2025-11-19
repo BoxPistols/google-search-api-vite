@@ -77,7 +77,9 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
         result.link,
         result.snippet,
         result.displayLink || result.link,
-      ].map(field => escapeCSVField(field)).join(',');
+      ]
+        .map(field => escapeCSVField(field))
+        .join(',');
     });
 
     // Windows互換性のため改行コードを\r\nに統一
@@ -203,11 +205,7 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
               <StyledCell>{result.snippet}</StyledCell>
               <TableCell sx={{ textAlign: 'center' }}>
                 <Tooltip title="詳細を表示">
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={() => handleShowDetail(result)}
-                  >
+                  <IconButton size="small" color="primary" onClick={() => handleShowDetail(result)}>
                     <ContentPasteIcon />
                   </IconButton>
                 </Tooltip>
@@ -238,7 +236,11 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
         </Box>
       )}
       <Suspense fallback={<CircularProgress />}>
-        <ResultDetail result={selectedResult} open={detailOpen} onClose={() => setDetailOpen(false)} />
+        <ResultDetail
+          result={selectedResult}
+          open={detailOpen}
+          onClose={() => setDetailOpen(false)}
+        />
       </Suspense>
     </TableContainer>
   );

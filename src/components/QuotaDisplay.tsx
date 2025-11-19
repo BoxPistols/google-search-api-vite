@@ -62,8 +62,8 @@ const QuotaDisplay = ({ onQuotaUpdate }: QuotaDisplayProps) => {
         borderColor: isCriticalQuota
           ? 'error.light'
           : isLowQuota
-          ? 'warning.light'
-          : 'primary.light',
+            ? 'warning.light'
+            : 'primary.light',
         borderRadius: 3,
       }}
     >

@@ -40,9 +40,7 @@ const StatCard = ({
       },
     }}
   >
-    <Box sx={{ fontSize: '2rem', display: 'flex', alignItems: 'center', color }}>
-      {icon}
-    </Box>
+    <Box sx={{ fontSize: '2rem', display: 'flex', alignItems: 'center', color }}>{icon}</Box>
     <Box sx={{ flexGrow: 1 }}>
       <Typography variant="caption" color="text.secondary">
         {label}

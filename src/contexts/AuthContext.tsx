@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (!firebaseEnabled || !auth || !googleProvider) {
       alert(
         'Firebase認証が設定されていません。\n' +
-        'FIREBASE_SETUP.mdを参照して、Firebase設定を完了してください。'
+          'FIREBASE_SETUP.mdを参照して、Firebase設定を完了してください。'
       );
       throw new Error('Firebase not configured');
     }
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, firebaseUser => {
       if (firebaseUser) {
         const userType = determineUserType(firebaseUser);
         setUser({

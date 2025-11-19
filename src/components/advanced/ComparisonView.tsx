@@ -42,9 +42,7 @@ export const ComparisonView = memo(({ data }: ComparisonViewProps) => {
   // Compare top 10 results
   const comparison = data[0].results.slice(0, 10).map((result, index) => {
     const previousResult = data[1].results.find(r => r.link === result.link);
-    const previousRank = previousResult
-      ? data[1].results.indexOf(previousResult) + 1
-      : null;
+    const previousRank = previousResult ? data[1].results.indexOf(previousResult) + 1 : null;
 
     const currentRank = index + 1;
     const rankChange = previousRank ? previousRank - currentRank : null;
@@ -84,16 +82,8 @@ export const ComparisonView = memo(({ data }: ComparisonViewProps) => {
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <Chip
-          label={`現在: ${data[0].date}`}
-          color="primary"
-          variant="outlined"
-        />
-        <Chip
-          label={`以前: ${data[1].date}`}
-          color="secondary"
-          variant="outlined"
-        />
+        <Chip label={`現在: ${data[0].date}`} color="primary" variant="outlined" />
+        <Chip label={`以前: ${data[1].date}`} color="secondary" variant="outlined" />
       </Box>
 
       <Table>
@@ -125,18 +115,20 @@ export const ComparisonView = memo(({ data }: ComparisonViewProps) => {
                 />
               </TableCell>
               <TableCell align="center">
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}
+                >
                   {getRankChangeIcon(item.rankChange)}
                   <Chip
                     label={
                       item.rankChange === null
                         ? '新規'
                         : item.rankChange === 0
-                        ? '変化なし'
-                        : `${Math.abs(item.rankChange)}位${item.rankChange > 0 ? '上昇' : '下降'}`
+                          ? '変化なし'
+                          : `${Math.abs(item.rankChange)}位${item.rankChange > 0 ? '上昇' : '下降'}`
                     }
                     size="small"
-                    color={getRankChangeColor(item.rankChange) as any}
+                    color={getRankChangeColor(item.rankChange)}
                     variant="outlined"
                   />
                 </Box>

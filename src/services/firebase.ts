@@ -44,7 +44,7 @@ if (firebaseEnabled) {
 } else {
   console.warn(
     '⚠️ Firebase not configured. Authentication features will be disabled.\n' +
-    'Please check FIREBASE_SETUP.md for configuration instructions.'
+      'Please check FIREBASE_SETUP.md for configuration instructions.'
   );
 }
 

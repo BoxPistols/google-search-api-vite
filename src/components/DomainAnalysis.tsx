@@ -13,21 +13,26 @@ interface DomainAnalysisProps {
 }
 
 const DomainAnalysis = memo(({ results }: DomainAnalysisProps) => {
-  if (results.length === 0) return null;
-
   // ドメインごとの出現回数を集計 - useMemoで最適化
   const sortedDomains = useMemo(() => {
-    const domainCounts = results.reduce((acc, result) => {
-      const domain = result.displayLink || new URL(result.link).hostname;
-      acc[domain] = (acc[domain] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    if (results.length === 0) return [];
+
+    const domainCounts = results.reduce(
+      (acc, result) => {
+        const domain = result.displayLink || new URL(result.link).hostname;
+        acc[domain] = (acc[domain] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // 出現回数でソート
     return Object.entries(domainCounts)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10);
   }, [results]);
+
+  if (sortedDomains.length === 0) return null;
 
   return (
     <Paper

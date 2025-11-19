@@ -14,7 +14,11 @@ const ResultsTable = lazy(() => import('./components/ResultsTable'));
 const SearchHistory = lazy(() => import('./components/SearchHistory'));
 const SearchStats = lazy(() => import('./components/SearchStats'));
 const DomainAnalysis = lazy(() => import('./components/DomainAnalysis'));
-const KeyboardShortcutsHelp = lazy(() => import('./components/advanced/KeyboardShortcutsHelp').then(module => ({ default: module.KeyboardShortcutsHelp })));
+const KeyboardShortcutsHelp = lazy(() =>
+  import('./components/advanced/KeyboardShortcutsHelp').then(module => ({
+    default: module.KeyboardShortcutsHelp,
+  }))
+);
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -35,13 +39,9 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import type { SearchResult } from './types/search';
+import type { SearchResult, SearchHistory as SearchHistoryType } from './types/search';
 import { saveSearchToHistory, getSearchStats } from './utils/localStorage';
-import {
-  recordQueryUsage,
-  canExecuteQuery,
-  getRemainingQueries,
-} from './utils/apiQuotaManager';
+import { recordQueryUsage, canExecuteQuery, getRemainingQueries } from './utils/apiQuotaManager';
 import { createCustomTheme } from './util/theme';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -113,10 +113,7 @@ const App = () => {
 
     if (!canExecuteQuery(newQueries)) {
       const remaining = getRemainingQueries();
-      toast.error(
-        `クォータ不足: 必要${newQueries}、残り${remaining}クエリ`,
-        { duration: 5000 }
-      );
+      toast.error(`クォータ不足: 必要${newQueries}、残り${remaining}クエリ`, { duration: 5000 });
       return;
     }
 
@@ -163,7 +160,7 @@ const App = () => {
     }
   };
 
-  const handleSelectHistory = (history: any) => {
+  const handleSelectHistory = (history: SearchHistoryType) => {
     setResults(history.results);
     setSearchKeyword(history.query);
     setQueriesUsed(prev => prev + history.queriesUsed);
@@ -211,7 +208,9 @@ const App = () => {
         <CssBaseline />
         <Box sx={{ position: 'relative', minHeight: '100vh', pb: 8 }}>
           {/* 右上のボタンエリア */}
-          <Box sx={{ position: 'fixed', top: 16, right: 16, zIndex: 1100, display: 'flex', gap: 2 }}>
+          <Box
+            sx={{ position: 'fixed', top: 16, right: 16, zIndex: 1100, display: 'flex', gap: 2 }}
+          >
             <IconButton
               onClick={() => setDarkMode(!darkMode)}
               color="primary"
@@ -227,179 +226,206 @@ const App = () => {
             <AuthButton />
           </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mt: '2vw', mb: 2 }}>
-          <SearchIcon sx={{ fontSize: { md: '2.5rem', xs: '1.75rem' }, color: 'primary.main' }} />
-          <Typography
-            component="h1"
-            variant="h2"
-            textAlign={'center'}
-            color="primary"
-            sx={{
-              fontSize: { md: '2.5rem', xs: '1.75rem' },
-              fontWeight: 'bold',
-            }}
-          >
-            Google Search Ranking Checker
-          </Typography>
-        </Box>
-
-        <Typography
-          textAlign={'center'}
-          variant="subtitle1"
-          m={1}
-          mb={0.25}
-          color="text.secondary"
-          sx={{
-            fontSize: { md: '0.875rem', xs: '0.75rem' },
-          }}
-        >
-          Google純正のSearch
-          APIを利用し、特定の検索ワードにおける検索順位結果を調べ、簡潔にレポーティングするSEO担当者向けツール
-        </Typography>
-        <Typography textAlign={'center'} variant="subtitle2" mx={1} color="text.secondary" mb={3}>
-          現在20件(1位から10位、11位から20位)の検索結果を結合して取得しています
-        </Typography>
-
-        <Container maxWidth="xl">
-          {/* APIクォータ表示 */}
-          <QuotaDisplay onQuotaUpdate={() => setStats(getSearchStats())} />
-
-          {/* 統計情報 */}
-          {stats.totalSearches > 0 && (
-            <AnimatedBox variant="slideUp" delay={0.1}>
-              <Suspense fallback={<StatsSkeleton />}>
-                <SearchStats
-                  totalSearches={stats.totalSearches}
-                  totalQueries={stats.totalQueries}
-                  lastSearch={stats.lastSearch}
-                />
-              </Suspense>
-            </AnimatedBox>
-          )}
-
-          {/* 検索履歴 */}
-          <AnimatedBox variant="slideUp" delay={0.2}>
-            <Suspense fallback={null}>
-              <SearchHistory onSelectHistory={handleSelectHistory} />
-            </Suspense>
-          </AnimatedBox>
-
-          {/* メイン検索フォーム */}
           <Box
             sx={{
-              p: 3,
-              pb: 4,
-              mb: 3,
-              boxShadow: 4,
-              borderRadius: 3,
-              backgroundColor: 'background.paper',
-              border: '2px solid',
-              borderColor: 'divider',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+              mt: '2vw',
+              mb: 2,
             }}
           >
-            <SearchForm onSearch={handleSearch} />
-            <Box
+            <SearchIcon sx={{ fontSize: { md: '2.5rem', xs: '1.75rem' }, color: 'primary.main' }} />
+            <Typography
+              component="h1"
+              variant="h2"
+              textAlign={'center'}
+              color="primary"
               sx={{
-                display: { md: 'flex', xs: 'block' },
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 3,
-                mt: 2,
+                fontSize: { md: '2.5rem', xs: '1.75rem' },
+                fontWeight: 'bold',
               }}
             >
-              <Typography variant="subtitle2" color="text.secondary">
-                今回の利用クエリ数:
-                <Typography component="span" fontWeight="bold" color="primary" ml={1}>
-                  {remainingQueries > 0 ? remainingQueries : 0}
-                </Typography>
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                ※ Google Search API基準: 1回の検索で2クエリ以上消費 (1クエリ/キーワード × 2ページ分) /
-                1日に100クエリまで
-              </Typography>
-            </Box>
+              Google Search Ranking Checker
+            </Typography>
           </Box>
 
-          {/* ドメイン分析 */}
-          {results.length > 0 && (
-            <AnimatedBox variant="slideUp" delay={0.3}>
+          <Typography
+            textAlign={'center'}
+            variant="subtitle1"
+            m={1}
+            mb={0.25}
+            color="text.secondary"
+            sx={{
+              fontSize: { md: '0.875rem', xs: '0.75rem' },
+            }}
+          >
+            Google純正のSearch
+            APIを利用し、特定の検索ワードにおける検索順位結果を調べ、簡潔にレポーティングするSEO担当者向けツール
+          </Typography>
+          <Typography textAlign={'center'} variant="subtitle2" mx={1} color="text.secondary" mb={3}>
+            現在20件(1位から10位、11位から20位)の検索結果を結合して取得しています
+          </Typography>
+
+          <Container maxWidth="xl">
+            {/* APIクォータ表示 */}
+            <QuotaDisplay onQuotaUpdate={() => setStats(getSearchStats())} />
+
+            {/* 統計情報 */}
+            {stats.totalSearches > 0 && (
+              <AnimatedBox variant="slideUp" delay={0.1}>
+                <Suspense fallback={<StatsSkeleton />}>
+                  <SearchStats
+                    totalSearches={stats.totalSearches}
+                    totalQueries={stats.totalQueries}
+                    lastSearch={stats.lastSearch}
+                  />
+                </Suspense>
+              </AnimatedBox>
+            )}
+
+            {/* 検索履歴 */}
+            <AnimatedBox variant="slideUp" delay={0.2}>
               <Suspense fallback={null}>
-                <DomainAnalysis results={results} />
+                <SearchHistory onSelectHistory={handleSelectHistory} />
               </Suspense>
             </AnimatedBox>
-          )}
 
-          {/* 検索結果 */}
-          {loading ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 8 }}>
-              <CircularProgress size={48} />
-              <Typography variant="h6" color="text.secondary">
-                検索中...
-              </Typography>
+            {/* メイン検索フォーム */}
+            <Box
+              sx={{
+                p: 3,
+                pb: 4,
+                mb: 3,
+                boxShadow: 4,
+                borderRadius: 3,
+                backgroundColor: 'background.paper',
+                border: '2px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <SearchForm onSearch={handleSearch} />
+              <Box
+                sx={{
+                  display: { md: 'flex', xs: 'block' },
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: 3,
+                  mt: 2,
+                }}
+              >
+                <Typography variant="subtitle2" color="text.secondary">
+                  今回の利用クエリ数:
+                  <Typography component="span" fontWeight="bold" color="primary" ml={1}>
+                    {remainingQueries > 0 ? remainingQueries : 0}
+                  </Typography>
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  ※ Google Search API基準: 1回の検索で2クエリ以上消費 (1クエリ/キーワード ×
+                  2ページ分) / 1日に100クエリまで
+                </Typography>
+              </Box>
             </Box>
-          ) : (
-            <AnimatedBox variant="fadeIn" delay={0.4}>
-              <Suspense fallback={<TableSkeleton />}>
-                <ResultsTable results={results} searchKeyword={searchKeyword} />
-              </Suspense>
-            </AnimatedBox>
+
+            {/* ドメイン分析 */}
+            {results.length > 0 && (
+              <AnimatedBox variant="slideUp" delay={0.3}>
+                <Suspense fallback={null}>
+                  <DomainAnalysis results={results} />
+                </Suspense>
+              </AnimatedBox>
+            )}
+
+            {/* 検索結果 */}
+            {loading ? (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 2,
+                  py: 8,
+                }}
+              >
+                <CircularProgress size={48} />
+                <Typography variant="h6" color="text.secondary">
+                  検索中...
+                </Typography>
+              </Box>
+            ) : (
+              <AnimatedBox variant="fadeIn" delay={0.4}>
+                <Suspense fallback={<TableSkeleton />}>
+                  <ResultsTable results={results} searchKeyword={searchKeyword} />
+                </Suspense>
+              </AnimatedBox>
+            )}
+          </Container>
+
+          {/* Floating Action Buttons */}
+          {results.length > 0 && (
+            <Box
+              sx={{
+                position: 'fixed',
+                bottom: 24,
+                right: 24,
+                zIndex: 1100,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
+              <Fab
+                color="primary"
+                aria-label="export"
+                onClick={e => setExportMenuAnchor(e.currentTarget)}
+                sx={{ boxShadow: 6 }}
+              >
+                <FileDownloadIcon />
+              </Fab>
+              <Fab
+                color="secondary"
+                aria-label="help"
+                onClick={() => setShowHelp(true)}
+                size="small"
+                sx={{ boxShadow: 6 }}
+              >
+                <HelpOutlineIcon />
+              </Fab>
+            </Box>
           )}
-        </Container>
 
-        {/* Floating Action Buttons */}
-        {results.length > 0 && (
-          <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1100, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Fab
-              color="primary"
-              aria-label="export"
-              onClick={(e) => setExportMenuAnchor(e.currentTarget)}
-              sx={{ boxShadow: 6 }}
-            >
-              <FileDownloadIcon />
-            </Fab>
-            <Fab
-              color="secondary"
-              aria-label="help"
-              onClick={() => setShowHelp(true)}
-              size="small"
-              sx={{ boxShadow: 6 }}
-            >
-              <HelpOutlineIcon />
-            </Fab>
-          </Box>
-        )}
+          {/* Export Menu */}
+          <Menu
+            anchorEl={exportMenuAnchor}
+            open={Boolean(exportMenuAnchor)}
+            onClose={() => setExportMenuAnchor(null)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          >
+            <MenuItem onClick={() => handleExport('pdf')}>
+              <ListItemIcon>
+                <PictureAsPdfIcon fontSize="small" color="error" />
+              </ListItemIcon>
+              <ListItemText>PDFでエクスポート</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={() => handleExport('excel')}>
+              <ListItemIcon>
+                <TableChartIcon fontSize="small" color="success" />
+              </ListItemIcon>
+              <ListItemText>Excelでエクスポート</ListItemText>
+            </MenuItem>
+          </Menu>
 
-        {/* Export Menu */}
-        <Menu
-          anchorEl={exportMenuAnchor}
-          open={Boolean(exportMenuAnchor)}
-          onClose={() => setExportMenuAnchor(null)}
-          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        >
-          <MenuItem onClick={() => handleExport('pdf')}>
-            <ListItemIcon>
-              <PictureAsPdfIcon fontSize="small" color="error" />
-            </ListItemIcon>
-            <ListItemText>PDFでエクスポート</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={() => handleExport('excel')}>
-            <ListItemIcon>
-              <TableChartIcon fontSize="small" color="success" />
-            </ListItemIcon>
-            <ListItemText>Excelでエクスポート</ListItemText>
-          </MenuItem>
-        </Menu>
+          {/* Keyboard Shortcuts Help Dialog */}
+          <Suspense fallback={null}>
+            <KeyboardShortcutsHelp open={showHelp} onClose={() => setShowHelp(false)} />
+          </Suspense>
 
-        {/* Keyboard Shortcuts Help Dialog */}
-        <Suspense fallback={null}>
-          <KeyboardShortcutsHelp open={showHelp} onClose={() => setShowHelp(false)} />
-        </Suspense>
-
-        <ToastProvider />
-        <Analytics />
-      </Box>
-    </ThemeProvider>
+          <ToastProvider />
+          <Analytics />
+        </Box>
+      </ThemeProvider>
     </AuthProvider>
   );
 };

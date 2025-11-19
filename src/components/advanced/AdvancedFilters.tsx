@@ -30,132 +30,133 @@ interface AdvancedFiltersProps {
   domains: string[];
 }
 
-export const AdvancedFilters = memo(({
-  filters,
-  onFiltersChange,
-  domains,
-}: AdvancedFiltersProps) => {
-  const [expanded, setExpanded] = useState(false);
+export const AdvancedFilters = memo(
+  ({ filters, onFiltersChange, domains }: AdvancedFiltersProps) => {
+    const [expanded, setExpanded] = useState(false);
 
-  const handleFilterChange = (key: keyof FilterOptions, value: any) => {
-    onFiltersChange({ ...filters, [key]: value });
-  };
+    const handleFilterChange = (key: keyof FilterOptions, value: FilterOptions[keyof FilterOptions]) => {
+      onFiltersChange({ ...filters, [key]: value });
+    };
 
-  const handleReset = () => {
-    onFiltersChange({
-      searchTerm: '',
-      domainFilter: '',
-      rankRange: [1, 20],
-      sortBy: 'rank',
-      sortOrder: 'asc',
-    });
-  };
+    const handleReset = () => {
+      onFiltersChange({
+        searchTerm: '',
+        domainFilter: '',
+        rankRange: [1, 20],
+        sortBy: 'rank',
+        sortOrder: 'asc',
+      });
+    };
 
-  const activeFiltersCount = [
-    filters.searchTerm,
-    filters.domainFilter,
-    filters.sortBy !== 'rank',
-  ].filter(Boolean).length;
+    const activeFiltersCount = [
+      filters.searchTerm,
+      filters.domainFilter,
+      filters.sortBy !== 'rank',
+    ].filter(Boolean).length;
 
-  return (
-    <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: 2 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          cursor: 'pointer',
-        }}
-        onClick={() => setExpanded(!expanded)}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <FilterListIcon color="primary" />
-          <Typography variant="h6" color="primary">
-            高度なフィルター
-          </Typography>
-          {activeFiltersCount > 0 && (
-            <Chip
-              label={`${activeFiltersCount}個適用中`}
+    return (
+      <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+          }}
+          onClick={() => setExpanded(!expanded)}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <FilterListIcon color="primary" />
+            <Typography variant="h6" color="primary">
+              高度なフィルター
+            </Typography>
+            {activeFiltersCount > 0 && (
+              <Chip label={`${activeFiltersCount}個適用中`} size="small" color="primary" />
+            )}
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {activeFiltersCount > 0 && (
+              <IconButton
+                size="small"
+                onClick={e => {
+                  e.stopPropagation();
+                  handleReset();
+                }}
+                title="フィルターをクリア"
+              >
+                <ClearIcon />
+              </IconButton>
+            )}
+            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </Box>
+        </Box>
+
+        <Collapse in={expanded}>
+          <Box
+            sx={{
+              mt: 2,
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: 2,
+            }}
+          >
+            {/* Search Term Filter */}
+            <TextField
+              label="タイトル・URLで検索"
+              value={filters.searchTerm}
+              onChange={e => handleFilterChange('searchTerm', e.target.value)}
               size="small"
-              color="primary"
+              fullWidth
             />
-          )}
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {activeFiltersCount > 0 && (
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleReset();
-              }}
-              title="フィルターをクリア"
-            >
-              <ClearIcon />
-            </IconButton>
-          )}
-          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-        </Box>
-      </Box>
 
-      <Collapse in={expanded}>
-        <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-          {/* Search Term Filter */}
-          <TextField
-            label="タイトル・URLで検索"
-            value={filters.searchTerm}
-            onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-            size="small"
-            fullWidth
-          />
+            {/* Domain Filter */}
+            <FormControl size="small" fullWidth>
+              <InputLabel>ドメイン</InputLabel>
+              <Select
+                value={filters.domainFilter}
+                onChange={e => handleFilterChange('domainFilter', e.target.value)}
+                label="ドメイン"
+              >
+                <MenuItem value="">すべて</MenuItem>
+                {domains.map(domain => (
+                  <MenuItem key={domain} value={domain}>
+                    {domain}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-          {/* Domain Filter */}
-          <FormControl size="small" fullWidth>
-            <InputLabel>ドメイン</InputLabel>
-            <Select
-              value={filters.domainFilter}
-              onChange={(e) => handleFilterChange('domainFilter', e.target.value)}
-              label="ドメイン"
-            >
-              <MenuItem value="">すべて</MenuItem>
-              {domains.map((domain) => (
-                <MenuItem key={domain} value={domain}>
-                  {domain}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            {/* Sort By */}
+            <FormControl size="small" fullWidth>
+              <InputLabel>並び替え</InputLabel>
+              <Select
+                value={filters.sortBy}
+                onChange={e => handleFilterChange('sortBy', e.target.value)}
+                label="並び替え"
+              >
+                <MenuItem value="rank">順位</MenuItem>
+                <MenuItem value="domain">ドメイン</MenuItem>
+                <MenuItem value="title">タイトル</MenuItem>
+              </Select>
+            </FormControl>
 
-          {/* Sort By */}
-          <FormControl size="small" fullWidth>
-            <InputLabel>並び替え</InputLabel>
-            <Select
-              value={filters.sortBy}
-              onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              label="並び替え"
-            >
-              <MenuItem value="rank">順位</MenuItem>
-              <MenuItem value="domain">ドメイン</MenuItem>
-              <MenuItem value="title">タイトル</MenuItem>
-            </Select>
-          </FormControl>
-
-          {/* Sort Order */}
-          <FormControl size="small" fullWidth>
-            <InputLabel>順序</InputLabel>
-            <Select
-              value={filters.sortOrder}
-              onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
-              label="順序"
-            >
-              <MenuItem value="asc">昇順</MenuItem>
-              <MenuItem value="desc">降順</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-      </Collapse>
-    </Paper>
-  );
-});
+            {/* Sort Order */}
+            <FormControl size="small" fullWidth>
+              <InputLabel>順序</InputLabel>
+              <Select
+                value={filters.sortOrder}
+                onChange={e => handleFilterChange('sortOrder', e.target.value)}
+                label="順序"
+              >
+                <MenuItem value="asc">昇順</MenuItem>
+                <MenuItem value="desc">降順</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </Collapse>
+      </Paper>
+    );
+  }
+);
 
 AdvancedFilters.displayName = 'AdvancedFilters';

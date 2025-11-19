@@ -13,7 +13,7 @@ interface ShortcutConfig {
 export const useKeyboardShortcuts = (shortcuts: ShortcutConfig[]) => {
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
-      shortcuts.forEach((shortcut) => {
+      shortcuts.forEach(shortcut => {
         const matchesKey = event.key.toLowerCase() === shortcut.key.toLowerCase();
         const matchesCtrl = shortcut.ctrl ? event.ctrlKey || event.metaKey : true;
         const matchesAlt = shortcut.alt ? event.altKey : true;

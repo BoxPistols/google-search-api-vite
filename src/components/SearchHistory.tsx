@@ -82,7 +82,7 @@ const SearchHistory = memo(({ onSelectHistory }: SearchHistoryProps) => {
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               handleClearHistory();
             }}
@@ -98,7 +98,7 @@ const SearchHistory = memo(({ onSelectHistory }: SearchHistoryProps) => {
 
       <Collapse in={expanded}>
         <List sx={{ mt: 2 }}>
-          {history.slice(0, 10).map((item) => (
+          {history.slice(0, 10).map(item => (
             <ListItem
               key={item.id}
               disablePadding

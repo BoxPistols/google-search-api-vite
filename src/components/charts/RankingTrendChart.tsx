@@ -1,6 +1,15 @@
 // Ranking Trend Chart Component
 import { memo, useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -49,15 +58,8 @@ export const RankingTrendChart = memo(({ data }: RankingTrendChartProps) => {
 
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={chartData}>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke={isDark ? '#333' : '#e0e0e0'}
-          />
-          <XAxis
-            dataKey="date"
-            stroke={isDark ? '#e0e0e0' : '#333'}
-            style={{ fontSize: '12px' }}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#333' : '#e0e0e0'} />
+          <XAxis dataKey="date" stroke={isDark ? '#e0e0e0' : '#333'} style={{ fontSize: '12px' }} />
           <YAxis
             reversed
             domain={[1, 20]}

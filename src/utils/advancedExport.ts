@@ -2,7 +2,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import type { SearchResult } from '../types/search';
+import type { SearchResult, SearchStats } from '../types/search';
 
 // PDF Export with Japanese font support
 export const exportToPDF = (results: SearchResult[], keyword: string) => {
@@ -52,23 +52,23 @@ export const exportToPDF = (results: SearchResult[], keyword: string) => {
 };
 
 // Excel Export with multiple sheets
-export const exportToExcel = (results: SearchResult[], keyword: string, stats?: any) => {
+export const exportToExcel = (results: SearchResult[], keyword: string, stats?: SearchStats) => {
   const workbook = XLSX.utils.book_new();
 
   // Main results sheet
   const resultsData = results.map((result, index) => ({
-    '順位': index + 1,
-    'タイトル': result.title,
-    'URL': result.link,
-    '表示URL': result.displayLink || result.link,
-    '説明': result.snippet,
+    順位: index + 1,
+    タイトル: result.title,
+    URL: result.link,
+    表示URL: result.displayLink || result.link,
+    説明: result.snippet,
   }));
 
   const resultsSheet = XLSX.utils.json_to_sheet(resultsData);
 
   // Set column widths
   resultsSheet['!cols'] = [
-    { wch: 6 },  // 順位
+    { wch: 6 }, // 順位
     { wch: 50 }, // タイトル
     { wch: 60 }, // URL
     { wch: 30 }, // 表示URL
@@ -79,15 +79,15 @@ export const exportToExcel = (results: SearchResult[], keyword: string, stats?: 
 
   // Summary sheet
   const summaryData = [
-    { '項目': 'キーワード', '値': keyword },
-    { '項目': '検索日時', '値': new Date().toLocaleString('ja-JP') },
-    { '項目': '結果件数', '値': results.length },
+    { 項目: 'キーワード', 値: keyword },
+    { 項目: '検索日時', 値: new Date().toLocaleString('ja-JP') },
+    { 項目: '結果件数', 値: results.length },
   ];
 
   if (stats) {
     summaryData.push(
-      { '項目': '総検索回数', '値': stats.totalSearches },
-      { '項目': '総クエリ消費', '値': stats.totalQueries }
+      { 項目: '総検索回数', 値: stats.totalSearches },
+      { 項目: '総クエリ消費', 値: stats.totalQueries }
     );
   }
 
@@ -95,18 +95,21 @@ export const exportToExcel = (results: SearchResult[], keyword: string, stats?: 
   XLSX.utils.book_append_sheet(workbook, summarySheet, 'サマリー');
 
   // Domain analysis sheet
-  const domainCounts = results.reduce((acc, result) => {
-    const domain = result.displayLink || new URL(result.link).hostname;
-    acc[domain] = (acc[domain] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const domainCounts = results.reduce(
+    (acc, result) => {
+      const domain = result.displayLink || new URL(result.link).hostname;
+      acc[domain] = (acc[domain] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const domainData = Object.entries(domainCounts)
     .sort(([, a], [, b]) => b - a)
     .map(([domain, count]) => ({
-      'ドメイン': domain,
-      '出現回数': count,
-      '割合': `${((count / results.length) * 100).toFixed(1)}%`,
+      ドメイン: domain,
+      出現回数: count,
+      割合: `${((count / results.length) * 100).toFixed(1)}%`,
     }));
 
   const domainSheet = XLSX.utils.json_to_sheet(domainData);

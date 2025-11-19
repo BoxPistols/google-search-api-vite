@@ -16,9 +16,9 @@ export interface AuthUser {
 }
 
 export const QUOTA_LIMITS: Record<UserType, number> = {
-  guest: 10,   // 未ログインは10クエリ/日
-  user: 50,    // 一般ユーザーは50クエリ/日
-  owner: 500,  // オーナーは500クエリ/日
+  guest: 10, // 未ログインは10クエリ/日
+  user: 50, // 一般ユーザーは50クエリ/日
+  owner: 500, // オーナーは500クエリ/日
 };
 
 // オーナーのメールアドレス（環境変数から読み込み）

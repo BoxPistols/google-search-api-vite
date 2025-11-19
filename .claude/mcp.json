@@ -9,6 +9,11 @@
         "GOOGLE_SEARCH_ID": "${VITE_GOOGLE_SEARCH_ID}"
       }
     },
+    "google-search-testing": {
+      "command": "node",
+      "args": ["./mcp-server/test-server.js"],
+      "description": "Test execution and coverage reporting MCP Server"
+    },
     "firestore": {
       "command": "npx",
       "args": [

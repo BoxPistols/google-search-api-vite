@@ -37,25 +37,28 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
   const canSearch = estimatedQueries > 0 && remainingQueries >= estimatedQueries;
   const isLowQuota = remainingQueries < estimatedQueries * 2;
 
-  const handleSubmit = useCallback((event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
 
-    if (!canSearch) {
-      alert(
-        `クォータが不足しています。\n` +
-        `必要なクエリ数: ${estimatedQueries}\n` +
-        `残りクエリ数: ${remainingQueries}`
-      );
-      return;
-    }
+      if (!canSearch) {
+        alert(
+          `クォータが不足しています。\n` +
+            `必要なクエリ数: ${estimatedQueries}\n` +
+            `残りクエリ数: ${remainingQueries}`
+        );
+        return;
+      }
 
-    // apiKeyとcxが文字列であることを確認してから渡す
-    if (typeof apiKey === 'string' && typeof cx === 'string') {
-      onSearch(apiKey, cx, query);
-    } else {
-      console.error('API KeyまたはSearch IDが設定されていません');
-    }
-  }, [canSearch, estimatedQueries, remainingQueries, apiKey, cx, query, onSearch]);
+      // apiKeyとcxが文字列であることを確認してから渡す
+      if (typeof apiKey === 'string' && typeof cx === 'string') {
+        onSearch(apiKey, cx, query);
+      } else {
+        console.error('API KeyまたはSearch IDが設定されていません');
+      }
+    },
+    [canSearch, estimatedQueries, remainingQueries, apiKey, cx, query, onSearch]
+  );
 
   return (
     <Box sx={{ width: '90%', margin: '0 auto' }}>
@@ -83,7 +86,8 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
               query.trim() ? (
                 <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <CalculateIcon sx={{ fontSize: '0.875rem' }} />
-                  キーワード数: {query.trim().split(/\s+/).length}個 → 消費クエリ: {estimatedQueries}
+                  キーワード数: {query.trim().split(/\s+/).length}個 → 消費クエリ:{' '}
+                  {estimatedQueries}
                 </Box>
               ) : (
                 'スペース区切りで複数キーワードを入力'
@@ -109,7 +113,11 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
               },
             }}
           >
-            {query === '' ? '入力待ち' : !canSearch ? 'クォータ不足' : `検索 (-${estimatedQueries})`}
+            {query === ''
+              ? '入力待ち'
+              : !canSearch
+                ? 'クォータ不足'
+                : `検索 (-${estimatedQueries})`}
           </Button>
         </Box>
 
@@ -138,7 +146,8 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
         {/* 警告メッセージ */}
         {isLowQuota && canSearch && (
           <Alert severity="warning" sx={{ mt: 2 }}>
-            残りクォータが少なくなっています。この検索を実行すると残り{remainingQueries - estimatedQueries}クエリになります。
+            残りクォータが少なくなっています。この検索を実行すると残り
+            {remainingQueries - estimatedQueries}クエリになります。
           </Alert>
         )}
       </form>

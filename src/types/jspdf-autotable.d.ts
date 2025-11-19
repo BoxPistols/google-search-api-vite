@@ -1,4 +1,5 @@
 // Type definitions for jspdf-autotable
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare module 'jspdf-autotable' {
   import { jsPDF } from 'jspdf';
 

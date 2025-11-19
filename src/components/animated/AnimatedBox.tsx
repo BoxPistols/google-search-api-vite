@@ -1,14 +1,12 @@
 // Animated Box Component with Framer Motion
-import { motion } from 'framer-motion';
+import { motion, HTMLMotionProps } from 'framer-motion';
 import { ReactNode } from 'react';
 import { designTokens } from '../../design/tokens';
 
-interface AnimatedBoxProps {
+interface AnimatedBoxProps extends Omit<HTMLMotionProps<'div'>, 'initial' | 'animate' | 'exit'> {
   children: ReactNode;
   variant?: keyof typeof designTokens.animations;
   delay?: number;
-  className?: string;
-  [key: string]: any;
 }
 
 export const AnimatedBox = ({
@@ -28,12 +26,20 @@ export const AnimatedBox = ({
     );
   }
 
+  // For standard animations (fadeIn, slideUp, slideDown, scaleIn variants)
+  const anim = animation as unknown as {
+    initial: { opacity: number; y?: number; scale?: number };
+    animate: { opacity: number; y?: number; scale?: number };
+    exit: { opacity: number; y?: number; scale?: number };
+    transition: { duration: number };
+  };
+
   return (
     <motion.div
-      initial={(animation as any).initial}
-      animate={(animation as any).animate}
-      exit={(animation as any).exit}
-      transition={{ ...(animation as any).transition, delay }}
+      initial={anim.initial}
+      animate={anim.animate}
+      exit={anim.exit}
+      transition={{ ...anim.transition, delay }}
       {...props}
     >
       {children}
@@ -43,22 +49,21 @@ export const AnimatedBox = ({
 
 export const AnimatedList = ({ children }: { children: ReactNode }) => {
   return (
-    <motion.div
-      variants={designTokens.animations.stagger}
-      initial="initial"
-      animate="animate"
-    >
+    <motion.div variants={designTokens.animations.stagger} initial="initial" animate="animate">
       {children}
     </motion.div>
   );
 };
 
-export const AnimatedListItem = ({ children, index = 0 }: { children: ReactNode; index?: number }) => {
+export const AnimatedListItem = ({
+  children,
+  index = 0,
+}: {
+  children: ReactNode;
+  index?: number;
+}) => {
   return (
-    <motion.div
-      variants={designTokens.animations.slideUp}
-      custom={index}
-    >
+    <motion.div variants={designTokens.animations.slideUp} custom={index}>
       {children}
     </motion.div>
   );
