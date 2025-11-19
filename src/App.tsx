@@ -8,7 +8,11 @@ import { TableSkeleton, StatsSkeleton } from './components/ui/SkeletonLoader';
 import { AnimatedBox } from './components/animated/AnimatedBox';
 import { useKeyboardShortcuts, createShortcuts } from './hooks/useKeyboardShortcuts';
 import { exportToPDF, exportToExcel } from './utils/advancedExport';
-import { filterJobSearchResults, sortJobSearchResults } from './utils/jobSearchFilter';
+import {
+  filterJobSearchResults,
+  filterFreelanceJobResults,
+  sortJobSearchResults,
+} from './utils/jobSearchFilter';
 
 // Lazy load heavy components
 const ResultsTable = lazy(() => import('./components/ResultsTable'));
@@ -154,6 +158,26 @@ const App = () => {
         }
       }
 
+      // フリーランス検索モードの場合、厳格なフィルタリング
+      if (mode === 'freelance') {
+        console.log('フリーランス検索モード: フィルタリング開始');
+        const beforeCount = allResults.length;
+        allResults = filterFreelanceJobResults(allResults);
+        allResults = sortJobSearchResults(allResults);
+        const afterCount = allResults.length;
+        console.log(`フリーランス検索モード: ${beforeCount}件 → ${afterCount}件に絞り込み`);
+
+        if (afterCount === 0) {
+          toast.dismiss();
+          toast.error(
+            'フリーランス案件が見つかりませんでした。条件を緩和するか、検索キーワードを変更してください。',
+            {
+              duration: 5000,
+            }
+          );
+        }
+      }
+
       setResults(allResults);
 
       recordQueryUsage(query, newQueries);
@@ -173,6 +197,8 @@ const App = () => {
       toast.dismiss();
       if (mode === 'job') {
         toast.success(`${allResults.length}件の求人情報を取得しました`);
+      } else if (mode === 'freelance') {
+        toast.success(`${allResults.length}件のフリーランス案件を取得しました`);
       } else {
         toast.success(`${allResults.length}件の検索結果を取得しました`);
       }
@@ -373,6 +399,30 @@ const App = () => {
                     <WorkIcon />
                     <Typography variant="body1" fontWeight="bold">
                       求人検索モードで検索しました - 企業の直接採用ページのみを表示
+                    </Typography>
+                  </Box>
+                )}
+                {currentSearchMode === 'freelance' && (
+                  <Box
+                    sx={{
+                      mb: 2,
+                      p: 2,
+                      backgroundColor: 'success.main',
+                      color: 'success.contrastText',
+                      borderRadius: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <WorkIcon />
+                      <Typography variant="body1" fontWeight="bold">
+                        フリーランス検索モード（厳選条件）
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption">
+                      週3以下 / 時給5000円以上 / フルリモートの条件で絞り込み済み
                     </Typography>
                   </Box>
                 )}

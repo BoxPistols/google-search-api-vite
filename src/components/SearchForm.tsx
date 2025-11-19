@@ -11,10 +11,11 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import WorkIcon from '@mui/icons-material/Work';
 import SearchIcon from '@mui/icons-material/Search';
+import ComputerIcon from '@mui/icons-material/Computer';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import { getRemainingQueries } from '../utils/apiQuotaManager';
 
-export type SearchMode = 'normal' | 'job';
+export type SearchMode = 'normal' | 'job' | 'freelance';
 
 type SearchFormProps = {
   onSearch: (apiKey: string, cx: string, query: string, mode: SearchMode) => void;
@@ -101,7 +102,11 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
             </ToggleButton>
             <ToggleButton value="job" aria-label="求人検索">
               <WorkIcon sx={{ mr: 1 }} />
-              求人検索モード
+              求人検索
+            </ToggleButton>
+            <ToggleButton value="freelance" aria-label="フリーランス検索">
+              <ComputerIcon sx={{ mr: 1 }} />
+              フリーランス
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
@@ -119,6 +124,25 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
               <br />
               • ブログやまとめ記事を除外
               <br />• JSON-LD構造化データで求人情報を検出
+            </Typography>
+          </Alert>
+        )}
+
+        {/* フリーランス検索モードの説明 */}
+        {searchMode === 'freelance' && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            <Typography variant="body2" fontWeight="bold" gutterBottom>
+              フリーランス検索モード（厳選条件）
+            </Typography>
+            <Typography variant="caption" component="div">
+              • <strong>週3以下の業務委託案件</strong>のみを表示
+              <br />
+              • <strong>時給5000円以上</strong>の案件に限定
+              <br />
+              • <strong>フルリモート</strong>案件のみ
+              <br />
+              • ProSheet、レバテック等のエージェントを除外
+              <br />• 企業の直接募集案件を優先
             </Typography>
           </Alert>
         )}

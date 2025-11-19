@@ -39,6 +39,33 @@ const JOB_SITE_BLACKLIST = [
   'wantedly.com', // ウォンテッドリーは微妙だが、求人プラットフォームなので除外
   'green-japan.com',
 
+  // フリーランス・業務委託エージェント
+  'prosheet.jp',
+  'pro-sheet.com',
+  'levtech.jp',
+  'freelance.levtech.jp',
+  'freelance-start.com',
+  'itmatch.jp',
+  'pe-bank.jp',
+  'bigdata-navi.com',
+  'freelancehub.jp',
+  'crowdtech.jp',
+  'workship.jp',
+  'midworks.jp',
+  'furien.jp',
+  'techs-stock.com',
+  'agent-network.com',
+  'geechs-job.com',
+  'forkwell.com',
+  'freelance.sejuku.net',
+  'techcareer-freelance.com',
+  'paiza.jp',
+  'findy-freelance.com',
+  'freelance.potepan.com',
+  'reworker.jp',
+  'agent-on.com',
+  'freelance-now.com',
+
   // まとめサイト・メディア
   'note.com',
   'note.mu',
@@ -92,6 +119,141 @@ const BLOG_ARTICLE_PATTERNS = [
   /\/magazine\//i,
   /まとめ/,
 ];
+
+/**
+ * フリーランス案件の詳細情報を抽出
+ */
+interface FreelanceJobInfo {
+  isFreelance: boolean;
+  workingDays?: number; // 週何日
+  hourlyRate?: number; // 時給
+  isRemote: boolean; // リモート可能か
+  remoteType?: 'full' | 'partial' | 'none'; // リモートの種類
+}
+
+/**
+ * 週の稼働日数を検出
+ */
+function detectWorkingDays(text: string): number | undefined {
+  const lowerText = text.toLowerCase();
+
+  // 週5、週4などのパターン
+  const weekDayMatch = lowerText.match(/週([1-5])(?:日|回)?/);
+  if (weekDayMatch) {
+    return parseInt(weekDayMatch[1], 10);
+  }
+
+  // フルタイム、常勤の場合は週5とみなす
+  if (lowerText.includes('フルタイム') || lowerText.includes('常勤') || lowerText.includes('正社員')) {
+    return 5;
+  }
+
+  return undefined;
+}
+
+/**
+ * 時給を検出（円、万円対応）
+ */
+function detectHourlyRate(text: string): number | undefined {
+  const lowerText = text.toLowerCase();
+
+  // 時給XXX円、時給XXX万円のパターン
+  const hourlyRateMatch = lowerText.match(/時給\s*([0-9,]+)\s*(万?円|円)/);
+  if (hourlyRateMatch) {
+    const amount = parseInt(hourlyRateMatch[1].replace(/,/g, ''), 10);
+    const unit = hourlyRateMatch[2];
+
+    if (unit.includes('万')) {
+      return amount * 10000;
+    }
+    return amount;
+  }
+
+  // 月額から時給を推定（月額 / 160時間）
+  const monthlyRateMatch = lowerText.match(/月額\s*([0-9,]+)\s*(万?円|円)/);
+  if (monthlyRateMatch) {
+    const amount = parseInt(monthlyRateMatch[1].replace(/,/g, ''), 10);
+    const unit = monthlyRateMatch[2];
+
+    let monthlyRate = amount;
+    if (unit.includes('万')) {
+      monthlyRate = amount * 10000;
+    }
+
+    // 月額を160時間で割って時給を推定
+    return Math.round(monthlyRate / 160);
+  }
+
+  return undefined;
+}
+
+/**
+ * リモートワークの可否を検出
+ */
+function detectRemoteWork(text: string): { isRemote: boolean; remoteType: 'full' | 'partial' | 'none' } {
+  const lowerText = text.toLowerCase();
+
+  // フルリモートのキーワード
+  if (
+    lowerText.includes('フルリモート') ||
+    lowerText.includes('完全リモート') ||
+    lowerText.includes('full remote') ||
+    lowerText.includes('フル在宅')
+  ) {
+    return { isRemote: true, remoteType: 'full' };
+  }
+
+  // リモート可（一部リモート）
+  if (
+    lowerText.includes('リモート可') ||
+    lowerText.includes('リモートワーク可') ||
+    lowerText.includes('在宅可') ||
+    lowerText.includes('remote ok')
+  ) {
+    return { isRemote: true, remoteType: 'partial' };
+  }
+
+  // 常駐・出社必須のキーワード
+  if (
+    lowerText.includes('常駐') ||
+    lowerText.includes('出社') ||
+    lowerText.includes('オフィス勤務') ||
+    lowerText.includes('客先常駐')
+  ) {
+    return { isRemote: false, remoteType: 'none' };
+  }
+
+  return { isRemote: false, remoteType: 'none' };
+}
+
+/**
+ * フリーランス案件の情報を抽出
+ */
+function extractFreelanceJobInfo(result: SearchResult): FreelanceJobInfo {
+  const combinedText = `${result.title} ${result.snippet}`.toLowerCase();
+
+  const workingDays = detectWorkingDays(combinedText);
+  const hourlyRate = detectHourlyRate(combinedText);
+  const { isRemote, remoteType } = detectRemoteWork(combinedText);
+
+  // フリーランス・業務委託のキーワード
+  const isFreelance =
+    combinedText.includes('フリーランス') ||
+    combinedText.includes('業務委託') ||
+    combinedText.includes('freelance') ||
+    combinedText.includes('週3') ||
+    combinedText.includes('週2') ||
+    combinedText.includes('週1') ||
+    combinedText.includes('時給');
+
+  return {
+    isFreelance,
+    workingDays,
+    hourlyRate,
+    isRemote,
+    remoteType,
+  };
+}
 
 /**
  * MetatagsからJobPosting構造化データを検知
@@ -176,6 +338,9 @@ export function enrichJobPostingMetadata(result: SearchResult): SearchResult {
   // 企業名を抽出（displayLinkから推測）
   const companyName = result.displayLink.split('.')[0];
 
+  // フリーランス案件情報を抽出
+  const freelanceInfo = extractFreelanceJobInfo(result);
+
   return {
     ...result,
     isJobPosting,
@@ -184,6 +349,7 @@ export function enrichJobPostingMetadata(result: SearchResult): SearchResult {
       isDirectHiring,
       companyName: isDirectHiring ? companyName : undefined,
     },
+    freelanceInfo,
   };
 }
 
@@ -216,6 +382,65 @@ export function filterJobSearchResults(results: SearchResult[]): SearchResult[] 
       }
 
       console.log(`[Job Filter] 採用: ${result.link}`);
+      return true;
+    });
+}
+
+/**
+ * フリーランス案件専用のフィルタリング
+ * - 週3以下の案件に限定
+ * - 時給5000円未満を除外
+ * - フルリモート案件のみ
+ */
+export function filterFreelanceJobResults(results: SearchResult[]): SearchResult[] {
+  return results
+    .map(enrichJobPostingMetadata)
+    .filter(result => {
+      // 求人サイト・フリーランスエージェントを除外
+      if (isJobSiteDomain(result.displayLink)) {
+        console.log(`[Freelance Filter] 除外 (エージェント): ${result.displayLink}`);
+        return false;
+      }
+
+      // ブログ・まとめ記事を除外
+      if (isBlogOrArticle(result.link, result.title, result.snippet)) {
+        console.log(`[Freelance Filter] 除外 (ブログ/まとめ): ${result.link}`);
+        return false;
+      }
+
+      const freelanceInfo = result.freelanceInfo;
+      if (!freelanceInfo) {
+        console.log(`[Freelance Filter] 除外 (フリーランス情報なし): ${result.link}`);
+        return false;
+      }
+
+      // 週3以下の案件のみ
+      if (freelanceInfo.workingDays && freelanceInfo.workingDays > 3) {
+        console.log(
+          `[Freelance Filter] 除外 (週${freelanceInfo.workingDays}日): ${result.link}`
+        );
+        return false;
+      }
+
+      // 時給5000円未満を除外
+      if (freelanceInfo.hourlyRate && freelanceInfo.hourlyRate < 5000) {
+        console.log(
+          `[Freelance Filter] 除外 (時給${freelanceInfo.hourlyRate}円): ${result.link}`
+        );
+        return false;
+      }
+
+      // フルリモートのみ
+      if (freelanceInfo.remoteType !== 'full') {
+        console.log(
+          `[Freelance Filter] 除外 (リモート: ${freelanceInfo.remoteType}): ${result.link}`
+        );
+        return false;
+      }
+
+      console.log(
+        `[Freelance Filter] 採用 (週${freelanceInfo.workingDays || '?'}日, 時給${freelanceInfo.hourlyRate || '?'}円, ${freelanceInfo.remoteType}): ${result.link}`
+      );
       return true;
     });
 }

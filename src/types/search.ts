@@ -37,6 +37,14 @@ export interface SearchResult {
     location?: string;
     salary?: string;
   };
+  // フリーランス案件情報
+  freelanceInfo?: {
+    isFreelance: boolean;
+    workingDays?: number; // 週何日
+    hourlyRate?: number; // 時給
+    isRemote: boolean; // リモート可能か
+    remoteType?: 'full' | 'partial' | 'none'; // リモートの種類
+  };
 }
 
 export interface SearchHistory {
