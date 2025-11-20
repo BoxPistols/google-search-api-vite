@@ -13,9 +13,17 @@ import Tooltip from '@mui/material/Tooltip';
 import Avatar from '@mui/material/Avatar';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import DescriptionIcon from '@mui/icons-material/Description';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import WorkIcon from '@mui/icons-material/Work';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import BusinessIcon from '@mui/icons-material/Business';
+import ComputerIcon from '@mui/icons-material/Computer';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import type { SearchResult } from '../types/search';
 import theme from '../util/theme';
 
@@ -114,6 +122,9 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
         snippet: result.snippet,
         displayLink: result.displayLink,
         formattedUrl: result.formattedUrl,
+        isJobPosting: result.isJobPosting,
+        jobInfo: result.jobInfo,
+        freelanceInfo: result.freelanceInfo,
         metadata: result.pagemap?.metatags?.[0],
         thumbnail: result.pagemap?.cse_thumbnail?.[0],
       })),
@@ -190,7 +201,96 @@ const ResultsTable = ({ results, searchKeyword }: ResultsTableProps) => {
                 )}
               </TableCell>
               <StyledCell>
-                <strong>{result.title}</strong>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <strong>{result.title}</strong>
+
+                  {/* 求人情報バッジ */}
+                  {result.isJobPosting && (
+                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                      <Chip
+                        icon={<WorkIcon />}
+                        label="求人"
+                        color="primary"
+                        size="small"
+                        variant="filled"
+                      />
+                      {result.jobInfo?.hasStructuredData && (
+                        <Chip
+                          icon={<CheckCircleIcon />}
+                          label="構造化データ"
+                          color="success"
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {result.jobInfo?.isDirectHiring && (
+                        <Chip
+                          icon={<BusinessIcon />}
+                          label="直接採用"
+                          color="info"
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {result.jobInfo?.companyName && (
+                        <Chip
+                          label={result.jobInfo.companyName}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  )}
+
+                  {/* フリーランス案件情報バッジ */}
+                  {result.freelanceInfo?.isFreelance && (
+                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
+                      <Chip
+                        icon={<ComputerIcon />}
+                        label="フリーランス"
+                        color="success"
+                        size="small"
+                        variant="filled"
+                      />
+                      {result.freelanceInfo.workingDays && (
+                        <Chip
+                          icon={<CalendarTodayIcon />}
+                          label={`週${result.freelanceInfo.workingDays}日`}
+                          color={result.freelanceInfo.workingDays <= 3 ? 'success' : 'default'}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {result.freelanceInfo.hourlyRate && (
+                        <Chip
+                          icon={<AttachMoneyIcon />}
+                          label={`時給${result.freelanceInfo.hourlyRate.toLocaleString()}円`}
+                          color={result.freelanceInfo.hourlyRate >= 5000 ? 'success' : 'warning'}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {result.freelanceInfo.remoteType === 'full' && (
+                        <Chip
+                          icon={<HomeWorkIcon />}
+                          label="フルリモート"
+                          color="success"
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {result.freelanceInfo.remoteType === 'partial' && (
+                        <Chip
+                          icon={<HomeWorkIcon />}
+                          label="リモート可"
+                          color="info"
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  )}
+                </Box>
               </StyledCell>
               <StyledCell>
                 <a

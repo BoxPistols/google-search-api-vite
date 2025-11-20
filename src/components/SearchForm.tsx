@@ -7,15 +7,27 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import WorkIcon from '@mui/icons-material/Work';
+import SearchIcon from '@mui/icons-material/Search';
+import ComputerIcon from '@mui/icons-material/Computer';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import { getRemainingQueries } from '../utils/apiQuotaManager';
 
+export type SearchMode = 'normal' | 'job' | 'freelance';
+
 type SearchFormProps = {
-  onSearch: (apiKey: string, cx: string, query: string) => void;
+  onSearch: (apiKey: string, cx: string, query: string, mode: SearchMode) => void;
+  filterSettings?: {
+    maxWorkingDays: number;
+    minHourlyRate: number;
+    remoteType: 'full' | 'partial' | 'any';
+  };
 };
 // https://ja.vitejs.dev/guide/env-and-mode.html
 
-const SearchForm = memo(({ onSearch }: SearchFormProps) => {
+const SearchForm = memo(({ onSearch, filterSettings }: SearchFormProps) => {
   const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
   const cx = import.meta.env.VITE_GOOGLE_SEARCH_ID;
 
@@ -25,6 +37,7 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
   console.log('Search ID length:', typeof cx === 'string' ? cx.length : 'undefined');
 
   const [query, setQuery] = useState('');
+  const [searchMode, setSearchMode] = useState<SearchMode>('normal');
 
   // クエリ消費量を計算（2ページ分 × キーワード数）
   const estimatedQueries = useMemo(() => {
@@ -52,17 +65,102 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
 
       // apiKeyとcxが文字列であることを確認してから渡す
       if (typeof apiKey === 'string' && typeof cx === 'string') {
-        onSearch(apiKey, cx, query);
+        onSearch(apiKey, cx, query, searchMode);
       } else {
         console.error('API KeyまたはSearch IDが設定されていません');
       }
     },
-    [canSearch, estimatedQueries, remainingQueries, apiKey, cx, query, onSearch]
+    [canSearch, estimatedQueries, remainingQueries, apiKey, cx, query, searchMode, onSearch]
   );
 
   return (
     <Box sx={{ width: '90%', margin: '0 auto' }}>
       <form onSubmit={handleSubmit} aria-required="true">
+        {/* 検索モード切り替え */}
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <ToggleButtonGroup
+            value={searchMode}
+            exclusive
+            onChange={(_, newMode) => newMode && setSearchMode(newMode)}
+            aria-label="検索モード"
+            sx={{
+              backgroundColor: 'background.paper',
+              '& .MuiToggleButton-root': {
+                py: 1,
+                px: 3,
+                border: '2px solid',
+                borderColor: 'divider',
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                },
+              },
+            }}
+          >
+            <ToggleButton value="normal" aria-label="通常検索">
+              <SearchIcon sx={{ mr: 1 }} />
+              通常検索
+            </ToggleButton>
+            <ToggleButton value="job" aria-label="求人検索">
+              <WorkIcon sx={{ mr: 1 }} />
+              求人検索
+            </ToggleButton>
+            <ToggleButton value="freelance" aria-label="フリーランス検索">
+              <ComputerIcon sx={{ mr: 1 }} />
+              フリーランス
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        {/* 求人検索モードの説明 */}
+        {searchMode === 'job' && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2" fontWeight="bold" gutterBottom>
+              求人検索モード
+            </Typography>
+            <Typography variant="caption" component="div">
+              • 企業の直接採用ページのみを表示
+              <br />
+              • Indeed、リクナビ、マイナビなどの求人サイトを除外
+              <br />
+              • ブログやまとめ記事を除外
+              <br />• JSON-LD構造化データで求人情報を検出
+            </Typography>
+          </Alert>
+        )}
+
+        {/* フリーランス検索モードの説明 */}
+        {searchMode === 'freelance' && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            <Typography variant="body2" fontWeight="bold" gutterBottom>
+              フリーランス検索モード（現在の設定）
+            </Typography>
+            <Typography variant="caption" component="div">
+              • <strong>週{filterSettings?.maxWorkingDays || 3}日以下の業務委託案件</strong>
+              のみを表示
+              <br />
+              • <strong>時給{filterSettings?.minHourlyRate?.toLocaleString() || '5,000'}円以上</strong>
+              の案件に限定
+              <br />
+              • <strong>
+                {filterSettings?.remoteType === 'full'
+                  ? 'フルリモート'
+                  : filterSettings?.remoteType === 'partial'
+                    ? 'リモート可（一部リモート含む）'
+                    : 'リモート条件不問'}
+              </strong>
+              案件
+              <br />
+              • ProSheet、レバテック等のエージェントを除外
+              <br />• 企業の直接募集案件を優先
+            </Typography>
+          </Alert>
+        )}
+
         <Box
           sx={{
             display: 'grid',
