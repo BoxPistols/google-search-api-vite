@@ -387,18 +387,30 @@ export function filterJobSearchResults(results: SearchResult[]): SearchResult[] 
 }
 
 /**
- * フリーランス案件専用のフィルタリング
- * - 週3以下の案件に限定
- * - 時給5000円未満を除外
- * - フルリモート案件のみ
+ * フリーランス案件専用のフィルタリング（動的設定対応）
  */
-export function filterFreelanceJobResults(results: SearchResult[]): SearchResult[] {
+export function filterFreelanceJobResults(
+  results: SearchResult[],
+  settings: {
+    maxWorkingDays: number;
+    minHourlyRate: number;
+    remoteType: 'full' | 'partial' | 'any';
+    customBlocklist: string[];
+  }
+): SearchResult[] {
   return results
     .map(enrichJobPostingMetadata)
     .filter(result => {
       // 求人サイト・フリーランスエージェントを除外
       if (isJobSiteDomain(result.displayLink)) {
         console.log(`[Freelance Filter] 除外 (エージェント): ${result.displayLink}`);
+        return false;
+      }
+
+      // カスタムブロックリストでチェック
+      const lowerDomain = result.displayLink.toLowerCase();
+      if (settings.customBlocklist.some(domain => lowerDomain.includes(domain.toLowerCase()))) {
+        console.log(`[Freelance Filter] 除外 (カスタムブロックリスト): ${result.displayLink}`);
         return false;
       }
 
@@ -414,26 +426,33 @@ export function filterFreelanceJobResults(results: SearchResult[]): SearchResult
         return false;
       }
 
-      // 週3以下の案件のみ
-      if (freelanceInfo.workingDays && freelanceInfo.workingDays > 3) {
+      // 週の稼働日数チェック
+      if (freelanceInfo.workingDays && freelanceInfo.workingDays > settings.maxWorkingDays) {
         console.log(
-          `[Freelance Filter] 除外 (週${freelanceInfo.workingDays}日): ${result.link}`
+          `[Freelance Filter] 除外 (週${freelanceInfo.workingDays}日 > ${settings.maxWorkingDays}日): ${result.link}`
         );
         return false;
       }
 
-      // 時給5000円未満を除外
-      if (freelanceInfo.hourlyRate && freelanceInfo.hourlyRate < 5000) {
+      // 時給チェック
+      if (freelanceInfo.hourlyRate && freelanceInfo.hourlyRate < settings.minHourlyRate) {
         console.log(
-          `[Freelance Filter] 除外 (時給${freelanceInfo.hourlyRate}円): ${result.link}`
+          `[Freelance Filter] 除外 (時給${freelanceInfo.hourlyRate}円 < ${settings.minHourlyRate}円): ${result.link}`
         );
         return false;
       }
 
-      // フルリモートのみ
-      if (freelanceInfo.remoteType !== 'full') {
+      // リモートタイプチェック
+      if (settings.remoteType === 'full' && freelanceInfo.remoteType !== 'full') {
         console.log(
-          `[Freelance Filter] 除外 (リモート: ${freelanceInfo.remoteType}): ${result.link}`
+          `[Freelance Filter] 除外 (リモート: ${freelanceInfo.remoteType}, 必要: full): ${result.link}`
+        );
+        return false;
+      }
+
+      if (settings.remoteType === 'partial' && freelanceInfo.remoteType === 'none') {
+        console.log(
+          `[Freelance Filter] 除外 (リモート: ${freelanceInfo.remoteType}, 必要: partial以上): ${result.link}`
         );
         return false;
       }

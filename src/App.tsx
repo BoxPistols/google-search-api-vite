@@ -3,6 +3,7 @@ import { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import SearchForm, { type SearchMode } from './components/SearchForm';
 import QuotaDisplay from './components/QuotaDisplay';
 import AuthButton from './components/AuthButton';
+import { FreelanceFilterSettings } from './components/FreelanceFilterSettings';
 import { ToastProvider, toast } from './components/ui/Toast';
 import { TableSkeleton, StatsSkeleton } from './components/ui/SkeletonLoader';
 import { AnimatedBox } from './components/animated/AnimatedBox';
@@ -13,6 +14,12 @@ import {
   filterFreelanceJobResults,
   sortJobSearchResults,
 } from './utils/jobSearchFilter';
+import {
+  getFreelanceFilterSettings,
+  saveFreelanceFilterSettings,
+  resetFreelanceFilterSettings,
+} from './utils/freelanceFilterStorage';
+import type { FreelanceFilterSettings as FilterSettings } from './types/freelanceFilter';
 
 // Lazy load heavy components
 const ResultsTable = lazy(() => import('./components/ResultsTable'));
@@ -64,6 +71,9 @@ const App = () => {
   });
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [filterSettings, setFilterSettings] = useState<FilterSettings>(
+    getFreelanceFilterSettings()
+  );
 
   const searchFormRef = useRef<HTMLInputElement>(null);
 
@@ -161,8 +171,9 @@ const App = () => {
       // フリーランス検索モードの場合、厳格なフィルタリング
       if (mode === 'freelance') {
         console.log('フリーランス検索モード: フィルタリング開始');
+        console.log('フィルター設定:', filterSettings);
         const beforeCount = allResults.length;
-        allResults = filterFreelanceJobResults(allResults);
+        allResults = filterFreelanceJobResults(allResults, filterSettings);
         allResults = sortJobSearchResults(allResults);
         const afterCount = allResults.length;
         console.log(`フリーランス検索モード: ${beforeCount}件 → ${afterCount}件に絞り込み`);
@@ -323,6 +334,23 @@ const App = () => {
             {/* APIクォータ表示 */}
             <QuotaDisplay onQuotaUpdate={() => setStats(getSearchStats())} />
 
+            {/* フリーランスフィルター設定 */}
+            {currentSearchMode === 'freelance' && results.length === 0 && !loading && (
+              <AnimatedBox variant="slideUp" delay={0.1}>
+                <FreelanceFilterSettings
+                  settings={filterSettings}
+                  onSettingsChange={newSettings => {
+                    setFilterSettings(newSettings);
+                    saveFreelanceFilterSettings(newSettings);
+                  }}
+                  onReset={() => {
+                    const resetSettings = resetFreelanceFilterSettings();
+                    setFilterSettings(resetSettings);
+                  }}
+                />
+              </AnimatedBox>
+            )}
+
             {/* 統計情報 */}
             {stats.totalSearches > 0 && (
               <AnimatedBox variant="slideUp" delay={0.1}>
@@ -356,7 +384,7 @@ const App = () => {
                 borderColor: 'divider',
               }}
             >
-              <SearchForm onSearch={handleSearch} />
+              <SearchForm onSearch={handleSearch} filterSettings={filterSettings} />
               <Box
                 sx={{
                   display: { md: 'flex', xs: 'block' },
@@ -418,11 +446,19 @@ const App = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <WorkIcon />
                       <Typography variant="body1" fontWeight="bold">
-                        フリーランス検索モード（厳選条件）
+                        フリーランス検索モード（適用条件）
                       </Typography>
                     </Box>
                     <Typography variant="caption">
-                      週3以下 / 時給5000円以上 / フルリモートの条件で絞り込み済み
+                      週{filterSettings.maxWorkingDays}日以下 / 時給
+                      {filterSettings.minHourlyRate.toLocaleString()}円以上 /{' '}
+                      {filterSettings.remoteType === 'full'
+                        ? 'フルリモート'
+                        : filterSettings.remoteType === 'partial'
+                          ? 'リモート可'
+                          : 'リモート不問'}
+                      {filterSettings.customBlocklist.length > 0 &&
+                        ` / カスタム除外: ${filterSettings.customBlocklist.length}件`}
                     </Typography>
                   </Box>
                 )}

@@ -19,10 +19,15 @@ export type SearchMode = 'normal' | 'job' | 'freelance';
 
 type SearchFormProps = {
   onSearch: (apiKey: string, cx: string, query: string, mode: SearchMode) => void;
+  filterSettings?: {
+    maxWorkingDays: number;
+    minHourlyRate: number;
+    remoteType: 'full' | 'partial' | 'any';
+  };
 };
 // https://ja.vitejs.dev/guide/env-and-mode.html
 
-const SearchForm = memo(({ onSearch }: SearchFormProps) => {
+const SearchForm = memo(({ onSearch, filterSettings }: SearchFormProps) => {
   const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
   const cx = import.meta.env.VITE_GOOGLE_SEARCH_ID;
 
@@ -132,14 +137,23 @@ const SearchForm = memo(({ onSearch }: SearchFormProps) => {
         {searchMode === 'freelance' && (
           <Alert severity="success" sx={{ mb: 2 }}>
             <Typography variant="body2" fontWeight="bold" gutterBottom>
-              フリーランス検索モード（厳選条件）
+              フリーランス検索モード（現在の設定）
             </Typography>
             <Typography variant="caption" component="div">
-              • <strong>週3以下の業務委託案件</strong>のみを表示
+              • <strong>週{filterSettings?.maxWorkingDays || 3}日以下の業務委託案件</strong>
+              のみを表示
               <br />
-              • <strong>時給5000円以上</strong>の案件に限定
+              • <strong>時給{filterSettings?.minHourlyRate?.toLocaleString() || '5,000'}円以上</strong>
+              の案件に限定
               <br />
-              • <strong>フルリモート</strong>案件のみ
+              • <strong>
+                {filterSettings?.remoteType === 'full'
+                  ? 'フルリモート'
+                  : filterSettings?.remoteType === 'partial'
+                    ? 'リモート可（一部リモート含む）'
+                    : 'リモート条件不問'}
+              </strong>
+              案件
               <br />
               • ProSheet、レバテック等のエージェントを除外
               <br />• 企業の直接募集案件を優先
